@@ -50,3 +50,10 @@ https://www.codeproject.com/Articles/2890/Using-ListView-control-under-Win-API
 ## PE File Format ##
 https://pastebin.com/LTN6VjJE
 http://www.rohitab.com/discuss/topic/38872-simple-pe-information/#entry10086363
+
+## Mobile Vision
+https://developers.google.com/vision/
+https://hackernoon.com/machine-learning-for-android-developers-with-the-mobile-vision-api-part-1-face-detection-e7e24a3e472f 
+https://blog.xamarin.com/adding-face-tracking-live-recognition-android-app/ 
+https://blog.xamarin.com/adding-face-tracking-live-recognition-android-app/ 
+https://blog.xamarin.com/how-to-display-camera-ios-avfoundation/
