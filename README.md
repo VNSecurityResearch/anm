@@ -35,8 +35,6 @@ https://0xax.github.io/asm_8/
 https://en.wikibooks.org/wiki/X86_Assembly/Floating_Point
 https://www.csee.umbc.edu/courses/undergraduate/313/spring08/burt/lectures/File_IO/StrToFlt.html
 
-## Big Data
-
 ## CTF
 https://www.quora.com/How-do-I-prepare-for-capture-the-flag-hacking-competition
 https://www.root-me.org/?lang=en
