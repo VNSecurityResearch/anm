@@ -47,3 +47,7 @@ reversing.kr
 https://msdn.microsoft.com/en-us/library/windows/desktop/aa382380(v=vs.85).aspx
 https://www.3dbuzz.com/forum/threads/119390-Simple-OpenFileDialog-example
 https://www.codeproject.com/Articles/3448/Using-TreeControl-TreeView-under-Win-API
+
+## PE File Format ##
+https://pastebin.com/LTN6VjJE
+http://www.rohitab.com/discuss/topic/38872-simple-pe-information/#entry10086363
