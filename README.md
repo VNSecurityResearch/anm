@@ -50,6 +50,7 @@ https://www.codeproject.com/Articles/2890/Using-ListView-control-under-Win-API
 ## PE File Format ##
 https://pastebin.com/LTN6VjJE
 http://www.rohitab.com/discuss/topic/38872-simple-pe-information/#entry10086363
+https://stackoverflow.com/questions/8782771/loading-pe-headers
 
 ## Mobile Vision
 https://developers.google.com/vision/
