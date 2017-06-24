@@ -60,3 +60,6 @@ https://blog.xamarin.com/adding-face-tracking-live-recognition-android-app/
 https://blog.xamarin.com/how-to-display-camera-ios-avfoundation/
 https://github.com/tensorflow/models/tree/master/object_detection
 https://toidicodedao.com/2016/07/25/microsoft-cognitive-service-api/
+
+## Others
+https://getmdl.io/index.html
