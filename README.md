@@ -52,6 +52,7 @@ https://pastebin.com/LTN6VjJE
 http://www.rohitab.com/discuss/topic/38872-simple-pe-information/#entry10086363
 https://stackoverflow.com/questions/8782771/loading-pe-headers
 http://www.ntcore.com/files/inject2exe.htm
+http://www.ntcore.com/files/inject2it.htm
 
 ## Mobile Vision
 https://developers.google.com/vision/
