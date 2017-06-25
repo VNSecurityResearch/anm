@@ -51,6 +51,7 @@ https://www.codeproject.com/Articles/2890/Using-ListView-control-under-Win-API
 https://pastebin.com/LTN6VjJE
 http://www.rohitab.com/discuss/topic/38872-simple-pe-information/#entry10086363
 https://stackoverflow.com/questions/8782771/loading-pe-headers
+http://www.ntcore.com/files/inject2exe.htm
 
 ## Mobile Vision
 https://developers.google.com/vision/
@@ -63,3 +64,4 @@ https://toidicodedao.com/2016/07/25/microsoft-cognitive-service-api/
 
 ## Others
 https://getmdl.io/index.html
+
