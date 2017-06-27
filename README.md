@@ -55,6 +55,7 @@ http://www.ntcore.com/files/inject2exe.htm
 http://www.ntcore.com/files/inject2it.htm
 http://www.csn.ul.ie/~caolan/pub/winresdump/winresdump/doc/pefile2.html
 http://www.rohitab.com/discuss/topic/40594-parsing-pe-export-table/
+https://github.com/YajS/NikPEViewer/blob/master/NikPEViewer/PEViewer.cpp
 
 ## Mobile Vision
 https://developers.google.com/vision/
