@@ -1,0 +1,713 @@
+#include<tchar.h>
+#include<Windows.h>
+#include<commctrl.h>
+
+#include "resource.h"	// Ket noi ID cua cac control
+
+#define COL_SHORT_WIDTH 100	// Do dai cot ngan
+#define COL_LONG_WIDTH 200	// Do dai cot dai
+#define DEFAULT_MASK TVIF_TEXT | TVIF_PARAM | TVIF_CHILDREN | TVIF_HANDLE	// Default mask cho TreeView Item, quy dinh cac truong kha dung
+#define DOS_HEADER -3	// Tag cho Dos Header
+#define FILE_HEADER -5	// Tag cho File Header
+#define OPTIONAL_HEADER -7	// Tag cho Optional Header
+#define SECTION_HEADER -11	// Tag cho Section Header
+#define SECTION_HEADER_MEMBER -13	// Tag cho cac member cua Section Header
+#define SECTION_IMPORT -17	// Tag cho Import Tables
+#define SECTION_IMPORT_MEMBER -19	// Tag cho cac member cua Import Tables
+#define SECTION_EXPORT -23	// Tag cho Export Tables
+#define SECTION_EXPORT_MEMBER -29	// Tag cho cac member cua Export Tables
+
+#define WIN_64 1	// Tag cho Win 64bit
+#define WIN_32 0	// Tag cho Win 32bit
+
+INT_PTR CALLBACK DialogProc(HWND, UINT, WPARAM, LPARAM);
+void DisplayMessage(HWND, char[]);	// Hien thi thong bao
+void DeleteListViewColumns();	// Xoa cac cot vao ListView
+void AddListViewColumn(char[], int);	// Them cac cot vao ListView
+void AddListViewItem(char[], int, int);	// Them cac Item vao ListView
+void DeleteTreeViewItems();	// Xoa cac Item vao TreeView
+HTREEITEM AddTreeViewItem(HTREEITEM, char[], int, int);	// Them cac Item vao TreeView
+void Finish();	// Dong file
+
+DWORD RVA2Offset(DWORD);	// Chuyen tu RVA -> Offset
+
+// Them Item vao ListView theo cac dinh dang 2, 3 cot
+template <typename DATA_TYPE>
+void CreateFieldA(DATA_TYPE*, char[], int*);
+void CreateFieldB(WORD, char[], int*);
+void CreateFieldC(DWORD, DWORD, char[], int*);
+
+PIMAGE_SECTION_HEADER getFirstSection();	// Get FIRST_SECTION(ntHeader) tuy 64bit hay 32bit
+
+HINSTANCE hIns;
+HMENU hMenu;
+OPENFILENAMEA ofn;
+HANDLE hFile;
+HANDLE hMapping;
+HMODULE pMapping;
+PIMAGE_DOS_HEADER dosHeader;
+PIMAGE_NT_HEADERS ntHeader;
+PIMAGE_NT_HEADERS64 ntHeader64;
+PIMAGE_FILE_HEADER fileHeader;
+PIMAGE_OPTIONAL_HEADER optHeader;
+PIMAGE_OPTIONAL_HEADER64 optHeader64;
+PIMAGE_SECTION_HEADER secHeader;
+PIMAGE_SECTION_HEADER section[30];	// Luu cac thanh vien cua Section Header
+
+char filename[80] = "";			// Luu ten file voi full path
+char AppName[] = "PEViewer";	// Dung cho MessageBox
+int WIN = WIN_32;	// Default win tag
+
+TV_ITEMA tvItem;
+TV_INSERTSTRUCTA tvInsert;
+HTREEITEM Selected;
+HTREEITEM Parent;
+HTREEITEM Before;
+HTREEITEM Next;
+
+LV_COLUMNA lvCol;
+LV_ITEMA lvItem;
+int numCol = 0;	// So cot cua ListView
+int maxRowIm = 0;	// SL toi da cac thanh vien cua Import
+int maxRowEx = 0;	// SL toi da cac thanh vien cua Export
+
+HIMAGELIST hImageList;
+HBITMAP hBitMap;
+
+HWND hStaticTextPath;
+HWND hTreeView;
+HWND hListView;
+
+PCHAR dosHeaderBase;	// Vi tri bat dau cua File
+
+// Cac truong can cho hien thi Import
+struct IMPORT_TABLE {
+	PCHAR proc;
+	WORD hint;
+};
+IMPORT_TABLE import[80][200];
+
+// Cac truong can cho hien thi Export
+struct EXPORT_TABLE {
+	PCHAR name;
+	DWORD ordinal;
+	DWORD address;
+};
+EXPORT_TABLE exportt[80];
+
+int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
+{
+	// Khoi tao cac gia tri cua OPENFILENAME
+	// https://msdn.microsoft.com/en-us/library/windows/desktop/ms646839(v=vs.85).aspx
+	ZeroMemory(&ofn, sizeof(ofn));
+	ofn.lStructSize = sizeof(ofn);
+	ofn.hwndOwner = NULL;
+	ofn.hInstance = hInstance;
+	ofn.lpstrFile = filename;								// Ten file
+	ofn.lpstrFilter = "Exe\0*.EXE*\0Dll\0*.DLL\0Text\0*.TXT\0";			// Chuoi loc file
+	ofn.nMaxFile = sizeof(filename);						// Kich thuoc ten file
+
+	hIns = hInstance;
+
+	// Khoi tao DialogBoxParam
+	DialogBoxParam(
+		hInstance,
+		MAKEINTRESOURCE(MY_DIALOG),	// ID cua Dialog
+		NULL,
+		DialogProc,
+		NULL
+		);
+	return 0;
+}
+
+INT_PTR CALLBACK DialogProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+	switch (uMsg)
+	{
+		case WM_INITDIALOG:
+		{
+			// Load menu
+			hMenu = LoadMenu(hIns, MAKEINTRESOURCE(IDR_MENU1));
+			SetMenu(hwndDlg, hMenu);
+
+			InitCommonControls();
+
+			hTreeView = GetDlgItem(hwndDlg, TREE_VIEW);	// Gan TreeView
+
+			// Load anh
+			hImageList = ImageList_Create(16, 16, ILC_COLOR16, 2, 10);
+			hBitMap = LoadBitmap(hIns, MAKEINTRESOURCE(ICON_FILE));
+			ImageList_Add(hImageList, hBitMap, NULL);
+			DeleteObject(hBitMap);
+			TreeView_SetImageList(hTreeView, hImageList, 0);
+
+			hListView = GetDlgItem(hwndDlg, LIST_VIEW);	// Gan ListView
+		}
+		break;
+		case WM_NOTIFY:
+			if (((LPNMHDR)lParam)->hwndFrom == hTreeView) {
+				if (((LPNMHDR)lParam)->code == NM_DBLCLK) {
+					// Xu ly double click vao TreeView
+					Selected = TreeView_GetNextItem(hTreeView, Selected, TVGN_CARET);
+
+					char buffer[80] = "";
+					memset(&tvItem, 0, sizeof(tvItem));
+					tvItem.mask = DEFAULT_MASK;
+					tvItem.pszText = buffer;
+					tvItem.cchTextMax = 80;
+					tvItem.hItem = Selected;
+					
+					if (TreeView_GetItem(hTreeView, &tvItem)) {	// Lay ra du lieu cua Item dang duoc chon
+						DeleteListViewColumns();	// Clean cac cot
+						
+						if (tvItem.cChildren == 1) {
+							// Neu Item la Parent, liet ke cac Child cua no
+							AddListViewColumn(tvItem.pszText, COL_SHORT_WIDTH);
+
+							int i = 0;
+							while (true) {
+								if (i == 0)
+									Next = TreeView_GetChild(hTreeView, Selected);	// Lay Child dau tien
+								else 
+									Next = TreeView_GetNextSibling(hTreeView, Next);	// Lay Child tiep theo
+
+								if (Next == NULL) {
+									break;
+								}
+
+								tvItem.pszText = buffer;
+								tvItem.hItem = Next;
+								TreeView_GetItem(hTreeView, &tvItem);
+
+								AddListViewItem(tvItem.pszText, i, 0);
+								i++;
+							}
+						} else {
+							int row = 0;
+							if (tvItem.lParam == DOS_HEADER) {
+								AddListViewColumn("Address", COL_SHORT_WIDTH);
+								AddListViewColumn("Value", COL_SHORT_WIDTH);
+								AddListViewColumn("Meaning", COL_LONG_WIDTH);
+
+								CreateFieldA(&dosHeader->e_ovno, "Overlay number", &row);
+								CreateFieldA(&dosHeader->e_lfarlc, "File address of relocation table", &row);
+								CreateFieldA(&dosHeader->e_cs, "Initial (relative) CS value", &row);
+								CreateFieldA(&dosHeader->e_csum, "Checksum", &row);
+								CreateFieldA(&dosHeader->e_sp, "Initial SP value", &row);
+								CreateFieldA(&dosHeader->e_ss, "Initial (relative) SS value", &row);
+								CreateFieldA(&dosHeader->e_maxalloc, "Maximum extra paragraphs needed", &row);
+								CreateFieldA(&dosHeader->e_minalloc, "Minimum extra paragraphs needed", &row);
+								CreateFieldA(&dosHeader->e_cparhdr, "Size of header in paragraphs", &row);
+								CreateFieldA(&dosHeader->e_crlc, "Relocations", &row);
+								CreateFieldA(&dosHeader->e_cp, "Pages in file", &row);
+								CreateFieldA(&dosHeader->e_cblp, "Bytes on last page of file", &row);
+								CreateFieldA(&dosHeader->e_magic, "Magic number", &row);
+							} else if (tvItem.lParam == FILE_HEADER) {
+								AddListViewColumn("Address", COL_SHORT_WIDTH);
+								AddListViewColumn("Value", COL_SHORT_WIDTH);
+								AddListViewColumn("Meaning", COL_LONG_WIDTH);
+
+								CreateFieldA(&fileHeader->Characteristics, "Characteristics", &row);
+								CreateFieldA(&fileHeader->SizeOfOptionalHeader, "Size of optional header", &row);
+								CreateFieldA(&fileHeader->PointerToSymbolTable, "Pointer to symbol table", &row);
+								CreateFieldA(&fileHeader->TimeDateStamp, "Time/Date Stamp", &row);
+								CreateFieldA(&fileHeader->NumberOfSections, "Number of Sections", &row);
+								CreateFieldA(&fileHeader->Machine, "Machine", &row);
+								CreateFieldA(&ntHeader->Signature, "Signature PE", &row);
+							}
+							else if (tvItem.lParam == OPTIONAL_HEADER) {
+								AddListViewColumn("Address", COL_SHORT_WIDTH);
+								AddListViewColumn("Value", COL_SHORT_WIDTH);
+								AddListViewColumn("Meaning", COL_LONG_WIDTH);
+
+								// Can phan biet 64bit va 32bit vi 64bit ko co Base of Code
+								// va Optional Header cung khac nhau
+								if (WIN == WIN_64) {
+									CreateFieldA(&optHeader64->NumberOfRvaAndSizes, "Number of rva and sizes", &row);
+									CreateFieldA(&optHeader64->LoaderFlags, "Loader flags", &row);
+									CreateFieldA(&optHeader64->SizeOfHeapCommit, "Size of heap commit", &row);
+									CreateFieldA(&optHeader64->SizeOfHeapReserve, "Size of heap reserve", &row);
+									CreateFieldA(&optHeader64->SizeOfStackCommit, "Size of stack commit", &row);
+									CreateFieldA(&optHeader64->SizeOfStackReserve, "Size of stack reserve", &row);
+									CreateFieldA(&optHeader64->DllCharacteristics, "DllCharacteristics", &row);
+									CreateFieldA(&optHeader64->Subsystem, "Subsystem", &row);
+									CreateFieldA(&optHeader64->CheckSum, "Checksum", &row);
+									CreateFieldA(&optHeader64->SizeOfHeaders, "Size of headers", &row);
+									CreateFieldA(&optHeader64->SizeOfImage, "Size of image", &row);
+									CreateFieldA(&optHeader64->MinorSubsystemVersion, "Minor subsystem version", &row);
+									CreateFieldA(&optHeader64->MajorSubsystemVersion, "Major subsystem version", &row);
+									CreateFieldA(&optHeader64->MinorImageVersion, "Minor image version", &row);
+									CreateFieldA(&optHeader64->MajorImageVersion, "Major image version", &row);
+									CreateFieldA(&optHeader64->MinorOperatingSystemVersion, "Minor operating system version", &row);
+									CreateFieldA(&optHeader64->MajorOperatingSystemVersion, "Major operating system version", &row);
+									CreateFieldA(&optHeader64->FileAlignment, "File alignment", &row);
+									CreateFieldA(&optHeader64->SectionAlignment, "Section alignment", &row);
+									CreateFieldA(&optHeader64->ImageBase, "Image base", &row);
+									CreateFieldA(&optHeader64->AddressOfEntryPoint, "Address of entry point", &row);
+									CreateFieldA(&optHeader64->SizeOfUninitializedData, "Size of uninitialized data", &row);
+									CreateFieldA(&optHeader64->SizeOfInitializedData, "Size of initialized data", &row);
+									CreateFieldA(&optHeader64->SizeOfCode, "Size of code", &row);
+									CreateFieldA(&optHeader64->MinorLinkerVersion, "Minor linker version", &row);
+									CreateFieldA(&optHeader64->MajorLinkerVersion, "Major linker version", &row);
+									CreateFieldA(&optHeader64->Magic, "Magic", &row);
+								}
+								else {
+									CreateFieldA(&optHeader->NumberOfRvaAndSizes, "Number of rva and sizes", &row);
+									CreateFieldA(&optHeader->LoaderFlags, "Loader flags", &row);
+									CreateFieldA(&optHeader->SizeOfHeapCommit, "Size of heap commit", &row);
+									CreateFieldA(&optHeader->SizeOfHeapReserve, "Size of heap reserve", &row);
+									CreateFieldA(&optHeader->SizeOfStackCommit, "Size of stack commit", &row);
+									CreateFieldA(&optHeader->SizeOfStackReserve, "Size of stack reserve", &row);
+									CreateFieldA(&optHeader->DllCharacteristics, "DllCharacteristics", &row);
+									CreateFieldA(&optHeader->Subsystem, "Subsystem", &row);
+									CreateFieldA(&optHeader->CheckSum, "Checksum", &row);
+									CreateFieldA(&optHeader->SizeOfHeaders, "Size of headers", &row);
+									CreateFieldA(&optHeader->SizeOfImage, "Size of image", &row);
+									CreateFieldA(&optHeader->MinorSubsystemVersion, "Minor subsystem version", &row);
+									CreateFieldA(&optHeader->MajorSubsystemVersion, "Major subsystem version", &row);
+									CreateFieldA(&optHeader->MinorImageVersion, "Minor image version", &row);
+									CreateFieldA(&optHeader->MajorImageVersion, "Major image version", &row);
+									CreateFieldA(&optHeader->MinorOperatingSystemVersion, "Minor operating system version", &row);
+									CreateFieldA(&optHeader->MajorOperatingSystemVersion, "Major operating system version", &row);
+									CreateFieldA(&optHeader->FileAlignment, "File alignment", &row);
+									CreateFieldA(&optHeader->SectionAlignment, "Section alignment", &row);
+									CreateFieldA(&optHeader->ImageBase, "Image base", &row);
+									CreateFieldA(&optHeader->BaseOfCode, "Base of code", &row);
+									CreateFieldA(&optHeader->AddressOfEntryPoint, "Address of entry point", &row);
+									CreateFieldA(&optHeader->SizeOfUninitializedData, "Size of uninitialized data", &row);
+									CreateFieldA(&optHeader->SizeOfInitializedData, "Size of initialized data", &row);
+									CreateFieldA(&optHeader->SizeOfCode, "Size of code", &row);
+									CreateFieldA(&optHeader->MinorLinkerVersion, "Minor linker version", &row);
+									CreateFieldA(&optHeader->MajorLinkerVersion, "Major linker version", &row);
+									CreateFieldA(&optHeader->Magic, "Magic", &row);
+								}
+							} else if (tvItem.lParam == SECTION_EXPORT_MEMBER) {
+								AddListViewColumn("Ordinal", COL_SHORT_WIDTH);
+								AddListViewColumn("Address", COL_SHORT_WIDTH);
+								AddListViewColumn("Name", COL_LONG_WIDTH);
+
+								int pos = maxRowEx - 1;
+								while (pos >= 0) {
+									CreateFieldC(exportt[pos].ordinal, exportt[pos].address, exportt[pos].name, &row);
+									pos--;
+								}
+							} else if (tvItem.lParam % SECTION_IMPORT_MEMBER == 0) {
+								AddListViewColumn("Ordinal(Hint)", COL_SHORT_WIDTH);
+								AddListViewColumn("Name", COL_LONG_WIDTH);
+
+								// Cac thanh vien cua Import deu co tag la k * SECTION_IMPORT_MEMBER
+								// => Nhan dc 1 tag, ta chia cho SECTION_IMPORT_MEMBER => Nhan duoc k
+								// Tra k trong matrix duoc du lieu cua Item do
+								// Vi moi Item co cac truong khac nhau, ta ko the luu tat ca cac SL truong cua Item
+								// Nen se dung matrix de luu voi SL truong la max
+								int posR = (tvItem.lParam / SECTION_IMPORT_MEMBER) - 1;	// Tru 1 do k min = 1 => index min = 0
+								int posC = maxRowIm;
+								while (posC >= 0) {
+									if (import[posR][posC].proc != NULL) {
+										CreateFieldB(import[posR][posC].hint, import[posR][posC].proc, &row);
+									}
+									posC--;
+								}
+							} else if (tvItem.lParam % SECTION_HEADER_MEMBER == 0) {
+								AddListViewColumn("Address", COL_SHORT_WIDTH);
+								AddListViewColumn("Value", COL_SHORT_WIDTH);
+								AddListViewColumn("Meaning", COL_LONG_WIDTH);
+
+								// Trong Section Header, cac Item co cac truong nhu nhau
+								// nen chi can mang 1 chieu
+								int pos = (tvItem.lParam / SECTION_HEADER_MEMBER) - 1;
+								CreateFieldA(&section[pos]->Characteristics, "Characteristics", &row);
+								CreateFieldA(&section[pos]->NumberOfLinenumbers, "Number of linenumbers", &row);
+								CreateFieldA(&section[pos]->NumberOfRelocations, "Number of relocations", &row);
+								CreateFieldA(&section[pos]->PointerToLinenumbers, "Pointer to linenumbers", &row);
+								CreateFieldA(&section[pos]->PointerToRelocations, "Pointer to relocations", &row);
+								CreateFieldA(&section[pos]->PointerToRawData, "Pointer to raw data", &row);
+								CreateFieldA(&section[pos]->SizeOfRawData, "Size of raw data", &row);
+								CreateFieldA(&section[pos]->VirtualAddress, "Virtual address", &row);
+								CreateFieldA(&section[pos]->Misc.VirtualSize, "Virtual size", &row);
+								CreateFieldA((PWORD)section[pos]->Name, (PCHAR)section[pos]->Name, &row);
+							} 
+						}
+					}
+				}
+			}
+			break;
+		case WM_COMMAND:
+			switch (LOWORD(wParam))
+			{
+			case BTN_OPEN:
+				ofn.Flags = OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST | OFN_LONGNAMES | OFN_EXPLORER | OFN_HIDEREADONLY;
+				if (GetOpenFileNameA(&ofn)) {
+					hStaticTextPath = GetDlgItem(hwndDlg, STATIC_PATH);
+					SetWindowTextA(hStaticTextPath, ofn.lpstrFile);
+
+					hFile = CreateFileA(ofn.lpstrFile, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_FLAG_SEQUENTIAL_SCAN, NULL);
+					if (hFile != INVALID_HANDLE_VALUE) {
+						hMapping = CreateFileMapping(hFile, NULL, PAGE_READONLY, 0, 0, 0);
+						pMapping = (HMODULE)MapViewOfFile(hMapping, FILE_MAP_READ, 0, 0, 0);
+
+						// Mo file se xoa sach cac cot
+						// Reset du lieu
+						memset(&import, 0, sizeof(import));
+						memset(&exportt, 0, sizeof(exportt));
+						maxRowIm = 0;
+						maxRowEx = 0;
+						WIN = WIN_32;
+						DeleteListViewColumns();
+						DeleteTreeViewItems();
+
+						Parent = AddTreeViewItem(NULL, "Header", NULL, 1);
+
+						dosHeader = (PIMAGE_DOS_HEADER)pMapping;
+						if (dosHeader->e_magic == IMAGE_DOS_SIGNATURE) {
+							dosHeaderBase = PCHAR(dosHeader);
+							ntHeader = (PIMAGE_NT_HEADERS) (dosHeaderBase + dosHeader->e_lfanew);
+							if (ntHeader->Signature == IMAGE_NT_SIGNATURE) {
+								Before = Parent;
+							
+								Parent = AddTreeViewItem(Before, "Dos Header", DOS_HEADER, 0);
+								Parent = AddTreeViewItem(Before, "File Header", FILE_HEADER, 0);
+								Parent = AddTreeViewItem(Before, "Optional Header", OPTIONAL_HEADER, 0);
+								Parent = AddTreeViewItem(Before, "Section Header", SECTION_HEADER, 1);
+
+								fileHeader = (PIMAGE_FILE_HEADER) &ntHeader->FileHeader;
+								optHeader = (PIMAGE_OPTIONAL_HEADER) &ntHeader->OptionalHeader;
+
+								// Tinh toan lai NT_HEADER va OPTIONAL_HEADER  tuy theo win 64bit hay 32bit
+								// Luu lai cac Virtual Access de dung sau nay
+								// ------------------------------------------------------------------------
+								DWORD importVA, exportVA;
+								if (optHeader->Magic == IMAGE_NT_OPTIONAL_HDR64_MAGIC) {
+									WIN = WIN_64;
+									ntHeader64 = (PIMAGE_NT_HEADERS64) (dosHeaderBase + dosHeader->e_lfanew);
+									fileHeader = (PIMAGE_FILE_HEADER)&ntHeader64->FileHeader;
+									optHeader64 = (PIMAGE_OPTIONAL_HEADER64) &ntHeader64->OptionalHeader;
+									importVA = optHeader64->DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress;
+									exportVA = optHeader64->DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT].VirtualAddress;
+									secHeader = (PIMAGE_SECTION_HEADER)((PCHAR(ntHeader64)) + sizeof(IMAGE_NT_HEADERS64));
+								} else {
+									WIN = WIN_32;
+									importVA = optHeader->DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress;
+									exportVA = optHeader->DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT].VirtualAddress;
+									secHeader = (PIMAGE_SECTION_HEADER)((PCHAR(ntHeader)) + sizeof(IMAGE_NT_HEADERS));
+								}
+								// ------------------------------------------------------------------------
+
+								// Duyet tat cac cac member cua Section Header
+								// -------------------------------------------
+								int sec;
+								PIMAGE_SECTION_HEADER tempSec;
+								for (tempSec = getFirstSection(), sec = 0; sec < fileHeader->NumberOfSections; sec++, tempSec++) {
+									section[sec] = tempSec;
+									AddTreeViewItem(Parent, (PCHAR)tempSec->Name, (sec+1) * SECTION_HEADER_MEMBER, 0);
+								}
+								// -------------------------------------------
+
+								if (importVA != 0) {
+									// De lay ra phan Import
+									// Ta tinh offset cua phan Import tu RVA tim duoc o tren
+									// Sau do cong voi Base cua file 
+									// Ra duoc vung cua Iport
+									PIMAGE_IMPORT_DESCRIPTOR importDesc = (PIMAGE_IMPORT_DESCRIPTOR)(dosHeaderBase + RVA2Offset(importVA));
+									Parent = AddTreeViewItem(NULL, "Import", SECTION_IMPORT, 1);
+									int imRow = 0;
+									WORD hint;
+									while (importDesc->Name != 0) {
+										// Duyet het Import
+										// Cac member cua Import duoc xep noi tiep nhau
+										// Can tinh Offset tung phan tuong ung
+										PCHAR pHint = dosHeaderBase + RVA2Offset(importDesc->FirstThunk);
+										PCHAR pDllName = dosHeaderBase + RVA2Offset(importDesc->Name);
+										AddTreeViewItem(Parent, pDllName, (imRow + 1) * SECTION_IMPORT_MEMBER, 0);
+
+										int imCol = 0;
+										if (WIN == WIN_64) {
+											PIMAGE_THUNK_DATA64 pThunk = PIMAGE_THUNK_DATA64(pHint);
+											while (pThunk->u1.AddressOfData != 0) {
+												IMPORT_TABLE importDll;
+												// Neu dia chi vuot qua 2^31
+												if ((pThunk->u1.AddressOfData & 0x80000000) != 0x80000000) {
+													PCHAR procName = dosHeaderBase + RVA2Offset(pThunk->u1.AddressOfData) + 2;
+													importDll.proc = procName;
+													memcpy(&hint, procName - 2, 2);
+													importDll.hint = hint;
+												}
+												else {
+													/*importDll.proc = NULL;
+													importDll.hint = 0;*/
+												}
+												import[imRow][imCol] = importDll;
+												imCol++;
+												pHint += 4;
+												pThunk++;
+											}
+										} else {
+											PIMAGE_THUNK_DATA pThunk = PIMAGE_THUNK_DATA(pHint);
+											while (pThunk->u1.AddressOfData != 0) {
+												IMPORT_TABLE importDll;
+												// Neu dia chi vuot qua 2^31
+												if ((pThunk->u1.AddressOfData & 0x80000000) != 0x80000000) {
+													PCHAR procName = dosHeaderBase + RVA2Offset(pThunk->u1.AddressOfData) + 2;
+													importDll.proc = procName;
+													memcpy(&hint, procName - 2, 2);
+													importDll.hint = hint;
+												}
+												else {
+													/*importDll.proc = NULL;
+													importDll.hint = 0;*/
+												}
+												import[imRow][imCol] = importDll;
+												imCol++;
+												pHint += 4;
+												pThunk++;
+											}
+										}
+										maxRowIm = maxRowIm > imCol ? maxRowIm : imCol;
+										importDesc++;
+										imRow++;
+									}
+								}
+
+								if (exportVA != 0) {
+									PIMAGE_EXPORT_DIRECTORY exportDesc = (PIMAGE_EXPORT_DIRECTORY)(dosHeaderBase + RVA2Offset(exportVA));
+									Parent = AddTreeViewItem(NULL, "Export", SECTION_EXPORT, 1);
+
+									PCHAR pDllName = dosHeaderBase + RVA2Offset(exportDesc->Name);
+									AddTreeViewItem(Parent, pDllName, SECTION_EXPORT_MEMBER, 0);
+
+									DWORD base = exportDesc->Base;
+									// Tien hanh tra 3 bang de tim ra ten function cung dia chi va stt
+									PDWORD AddressFunc = (PDWORD)(dosHeaderBase + RVA2Offset(exportDesc->AddressOfFunctions));
+									PDWORD NameFunc = (PDWORD)(dosHeaderBase + RVA2Offset(exportDesc->AddressOfNames));
+									PWORD OrdinalFunc = (PWORD)(dosHeaderBase + RVA2Offset(exportDesc->AddressOfNameOrdinals));
+
+									DWORD addr;
+									for (addr = 0; addr < exportDesc->NumberOfFunctions; addr++) {
+										PCHAR funName = dosHeaderBase + RVA2Offset(NameFunc[addr]);
+
+										EXPORT_TABLE exportP;
+										exportP.name = funName;
+										exportP.ordinal = OrdinalFunc[addr] + base;
+										if (WIN == WIN_64) {
+											exportP.address = AddressFunc[OrdinalFunc[addr]] + optHeader64->ImageBase;
+										} else {
+											exportP.address = AddressFunc[OrdinalFunc[addr]] + optHeader->ImageBase;
+										}
+										exportt[addr] = exportP;
+									}
+									maxRowEx = addr;
+								}
+							}
+							else {
+								DisplayMessage(hwndDlg, "This is not a valid PE file!");
+								Finish();
+							}
+						}
+						else {
+							DisplayMessage(hwndDlg, "This is not a valid PE file!");
+							Finish();
+						}
+					} else {
+						DisplayMessage(hwndDlg, "Can't open this file!");
+						Finish();
+					}
+				}
+				break;
+			case BTN_EXIT:
+				Finish();
+				EndDialog(hwndDlg, 0);
+				break;
+			case BTN_HELP:
+				DisplayMessage(hwndDlg, "This is document!");
+				break;
+			default:
+				Finish();
+				break;
+			}
+			break;
+		case WM_CLOSE:
+			Finish();
+			EndDialog(hwndDlg, 0);
+			break;
+		default:
+			break;
+	}
+
+	return 0;
+}
+
+/**
+* Dong file va cac Handle
+* @return void
+**/
+void Finish() {
+	UnmapViewOfFile(pMapping);
+	CloseHandle(hMapping);
+	CloseHandle(hFile);
+}
+
+/**
+* Hien thi Message
+* @param hwnd handle window hien hanh
+* @param msg[] chuoi message
+* @return void
+**/
+void DisplayMessage(HWND hwnd, char msg[]) {
+	MessageBox(hwnd, msg, AppName, MB_OK);
+}
+
+/**
+* Xoa tat ca cac cot cua ListView
+* Dong thoi xoa tat ca cac Item cua ListView
+* @return void
+**/
+void DeleteListViewColumns() {
+	ListView_DeleteAllItems(hListView);
+	while (numCol > 0) {
+		numCol--;
+		ListView_DeleteColumn(hListView, numCol);
+	}
+}
+
+/**
+* Xoa tat ca cac Item cua TreeView
+* @return void
+**/
+void DeleteTreeViewItems() {
+	TreeView_DeleteAllItems(hTreeView);
+}
+
+/**
+* Them cot cho ListView
+* @param title[] ten cot
+* @param width do dai cua cot
+* @return void
+**/
+void AddListViewColumn(char title[], int width) {
+	lvCol.mask = LVCF_TEXT | LVCF_WIDTH | LVCF_SUBITEM;
+	lvCol.pszText = title;
+	lvCol.cx = width;
+	ListView_InsertColumn(hListView, numCol++, &lvCol);
+}
+
+/**
+* Them Item vao ListView
+* @param text[] ten truong
+* @param iItem stt hang
+* @param iSubItem stt cot
+* @return void
+**/
+void AddListViewItem(char text[], int iItem, int iSubItem) {
+	lvItem.mask = LVIF_TEXT;
+	lvItem.cchTextMax = 80;
+	lvItem.iItem = iItem;
+	lvItem.iSubItem = iSubItem;
+	lvItem.pszText = text;
+	if (iSubItem == 0) {
+		ListView_InsertItem(hListView, &lvItem);
+	} else {
+		ListView_SetItem(hListView, &lvItem);
+	}
+}
+
+/**
+* Them Item vao TreeView
+* @param Parent item cha
+* @param title[] ten truong
+* @param data du lieu can luu, dung sau nay
+* @param haveChild = 0 | 1 - co hay ko co child
+* @return handle of TreeView Item
+**/
+HTREEITEM AddTreeViewItem(HTREEITEM Parent, char title[], int data, int haveChild) {
+	tvInsert.hParent = Parent;
+	tvInsert.hInsertAfter = TVI_LAST;
+	tvInsert.item.mask = DEFAULT_MASK;
+	tvInsert.item.pszText = title;
+	tvInsert.item.lParam = data;
+	tvInsert.item.cChildren = haveChild;
+	return TreeView_InsertItem(hTreeView, &tvInsert);
+}
+
+/**
+* Ham co the nhan vao hoac tra ve kieu DWORD hoac WORD (3 cot)
+* @param *file data du lieu
+* @param title[] ten truong
+* @param *row dong
+* @return void
+**/
+template <typename DATA_TYPE>
+void CreateFieldA(DATA_TYPE *field, char title[], int *row) {
+	char buffer[80] = "";
+	DATA_TYPE rva = (PCHAR)field - dosHeaderBase;
+	wsprintf(buffer, "%08X", rva);
+	AddListViewItem(buffer, *row, 0);
+	wsprintf(buffer, "%04X", *field);
+	AddListViewItem(buffer, *row, 1);
+	AddListViewItem(title, *row, 2);
+	*row++;
+}
+
+/**
+* Ham them vao ListView 2 cot
+* @param hint
+* @param title[] ten truong
+* @param *row dong
+* @return void
+**/
+void CreateFieldB(WORD hint, char title[], int *row) {
+	char buffer[80] = "";
+	wsprintf(buffer, "%08X", hint);
+	AddListViewItem(buffer, *row, 0);
+	AddListViewItem(title, *row, 1);
+	*row++;
+}
+
+/**
+* Ham them vao ListView (3 cot)
+* @param ordinal stt 
+* @param addr dia chi
+* @param title[] ten truong
+* @param *row dong
+* @return void
+**/
+void CreateFieldC(DWORD ordinal, DWORD addr, char title[], int *row) {
+	char buffer[80] = "";
+	wsprintf(buffer, "%08X", ordinal);
+	AddListViewItem(buffer, *row, 0);
+
+	char buffer2[80] = "";
+	wsprintf(buffer2, "%08X", addr);
+	AddListViewItem(buffer2, *row,	1);
+
+	AddListViewItem(title, *row, 2);
+	*row++;
+}
+
+/**
+* Chuyen tu RVA -> Offset
+* tu dia chi tuong doi, ta chuyen ra offset vi tri tinh tu section dau tien
+* lap cho den khi section vuot qua vung can tinh
+* @param rva dia tri virtual address can chuyen sang offset
+* @return offset
+**/
+DWORD RVA2Offset(DWORD rva) {
+	PIMAGE_SECTION_HEADER section = getFirstSection();
+	for (int sec = 0; sec < fileHeader->NumberOfSections; sec++) {
+		if (rva <= (section->VirtualAddress + section->SizeOfRawData)) {
+			break;
+		}
+		section++;
+	}
+	return rva + section->PointerToRawData - section->VirtualAddress;
+}
+
+/**
+* Lay ra FIRST SECTION tuy theo Win 64bit hay 32bit
+* @return section tuong ung
+**/
+PIMAGE_SECTION_HEADER getFirstSection() {
+	if (WIN == WIN_64) 
+		return IMAGE_FIRST_SECTION(ntHeader64);
+	else 
+		return IMAGE_FIRST_SECTION(ntHeader);
+}
