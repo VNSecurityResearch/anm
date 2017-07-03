@@ -70,3 +70,5 @@ https://toidicodedao.com/2016/07/25/microsoft-cognitive-service-api/
 ## Others
 https://getmdl.io/index.html
 
+# ML JS
+https://www.burakkanber.com/tag/ml-in-js/page/2/
