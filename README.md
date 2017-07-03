@@ -34,7 +34,7 @@ https://www.youtube.com/watch?v=PbMq7leH8TQ
 https://0xax.github.io/asm_8/
 https://en.wikibooks.org/wiki/X86_Assembly/Floating_Point
 https://www.csee.umbc.edu/courses/undergraduate/313/spring08/burt/lectures/File_IO/StrToFlt.html
-http://www.morethantechnical.com/2012/10/02/reading-a-directory-in-c-win32-posix/
+https://www.codeproject.com/Articles/2604/Browse-Folder-dialog-search-folder-and-all-sub-fol
 
 ## CTF
 https://www.quora.com/How-do-I-prepare-for-capture-the-flag-hacking-competition
