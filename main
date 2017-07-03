@@ -1,0 +1,190 @@
+#include<tchar.h>
+#include<Windows.h>
+#include<commctrl.h>
+#include<shlobj.h>
+
+#include "resource.h"	// Ket noi ID cua cac control
+
+#define COL_SHORT_WIDTH 100	// Do dai cot ngan
+#define COL_LONG_WIDTH 200	// Do dai cot dai
+
+INT_PTR CALLBACK DialogProc(HWND, UINT, WPARAM, LPARAM);
+void DisplayMessage(HWND, char[]);	// Hien thi thong bao
+void SearchFolder(char*);
+void AddListViewItem(char[], int, int);
+void AddListViewColumn(char[], int);
+int hex_to_int(char);
+
+HINSTANCE hIns;
+HMENU hMenu;
+
+char filename[80] = "";			// Luu ten file voi full path
+char AppName[] = "File Scan";	// Dung cho MessageBox
+
+LV_COLUMNA lvCol;
+LV_ITEMA lvItem;
+int numCol = 0;	// So cot cua ListView
+
+HWND hStaticTextPath;
+HWND hListFile;
+
+int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
+{
+	hIns = hInstance;
+
+	// Khoi tao DialogBoxParam
+	DialogBoxParam(
+		hInstance,
+		MAKEINTRESOURCE(MY_DIALOG),	// ID cua Dialog
+		NULL,
+		DialogProc,
+		NULL
+		);
+	return 0;
+}
+
+INT_PTR CALLBACK DialogProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+	switch (uMsg)
+	{
+	case WM_INITDIALOG:
+	{
+		// Load menu
+		hMenu = LoadMenu(hIns, MAKEINTRESOURCE(IDR_MENU1));
+		SetMenu(hwndDlg, hMenu);
+
+		InitCommonControls();
+
+		hListFile = GetDlgItem(hwndDlg, LIST_PATH);
+		hStaticTextPath = GetDlgItem(hwndDlg, EDIT_PATH);
+
+		AddListViewColumn("Name", COL_LONG_WIDTH);
+		AddListViewColumn("Size", COL_SHORT_WIDTH);
+		AddListViewColumn("Attributes", COL_SHORT_WIDTH);
+		AddListViewColumn("Date Modified", COL_SHORT_WIDTH);
+		AddListViewColumn("Date Created", COL_SHORT_WIDTH);
+		AddListViewColumn("Full Path", COL_LONG_WIDTH);
+	}
+	break;
+	case WM_NOTIFY:
+		if (((LPNMHDR)lParam)->hwndFrom == hListFile) {
+
+		}
+		break;
+	case WM_COMMAND:
+		switch (LOWORD(wParam)) {
+			case BTN_OPEN:
+				{
+					ListView_DeleteAllItems(hListFile);
+					
+					char path[MAX_PATH];
+					BROWSEINFO bi = { 0 };
+					bi.lpszTitle = ("Choose one folder to search...");
+					LPITEMIDLIST pidl = SHBrowseForFolder(&bi);
+
+					if (pidl != 0) {
+						SHGetPathFromIDList(pidl, path);
+
+						SetCurrentDirectory(path);
+
+						SetWindowText(hStaticTextPath, path);
+
+						SearchFolder(path);
+
+						IMalloc * imalloc = 0;
+						if (SUCCEEDED(SHGetMalloc(&imalloc)))
+						{
+							imalloc->Free(pidl);
+							imalloc->Release();
+						}
+					}
+				}
+			break;
+		case MENU_EXIT:
+			EndDialog(hwndDlg, 0);
+			break;
+		case MENU_HELP:
+			DisplayMessage(hwndDlg, "This is document!");
+			break;
+		default:
+			break;
+		}
+		break;
+	case WM_CLOSE:
+		EndDialog(hwndDlg, 0);
+		break;
+	default:
+		break;
+	}
+
+	return 0;
+}
+
+void DisplayMessage(HWND hwnd, char msg[]) {
+	MessageBox(hwnd, msg, AppName, MB_OK);
+}
+
+void AddListViewColumn(char title[], int width) {
+	memset(&lvCol, 0, sizeof(lvCol));
+	lvCol.mask = LVCF_TEXT | LVCF_WIDTH | LVCF_SUBITEM;
+	lvCol.pszText = title;
+	lvCol.cx = width;
+	ListView_InsertColumn(hListFile, ++numCol, &lvCol);
+}
+
+void AddListViewItem(char text[], int iItem, int iSubItem) {
+	lvItem.mask = LVIF_TEXT;
+	lvItem.cchTextMax = 80;
+	lvItem.iItem = iItem;
+	lvItem.iSubItem = iSubItem;
+	lvItem.pszText = text;
+	if (iSubItem == 0) {
+		ListView_InsertItem(hListFile, &lvItem);
+	}
+	else {
+		ListView_SetItem(hListFile, &lvItem);
+	}
+}
+
+void SearchFolder(char *path) { 
+	WIN32_FIND_DATA FindFileData;
+	HANDLE hFind;
+
+	char pathbak[MAX_PATH];
+
+	strcpy_s(pathbak, MAX_PATH, path);
+	 
+	hFind = FindFirstFile("*.*", &FindFileData);
+	 
+	do { 
+		if (hFind != INVALID_HANDLE_VALUE) { 
+			if (!(strcmp(FindFileData.cFileName, ".")) || !(strcmp(FindFileData.cFileName, ".."))) {
+				continue;
+			}
+			 
+			strcpy_s(path, MAX_PATH, pathbak);
+
+			wsprintf(path, "%s\\%s", path, FindFileData.cFileName);
+
+			if ((SetCurrentDirectory(path))) {
+				SearchFolder(path);
+			}
+
+			AddListViewItem(FindFileData.cFileName, 0, 0);
+
+			char buffer[255] = "";
+			wsprintf(buffer, "%d bytes", (FindFileData.nFileSizeHigh * (MAXDWORD + 1)) + FindFileData.nFileSizeLow);
+			AddListViewItem(buffer, 0, 1);
+
+			AddListViewItem("", 0, 2);
+
+			wsprintf(buffer, "%x", FindFileData.ftLastWriteTime);
+			AddListViewItem(buffer, 0, 3);
+			
+			wsprintf(buffer, "%x", FindFileData.ftCreationTime);
+			AddListViewItem(buffer, 0, 4);
+		}
+	} while (FindNextFile(hFind, &FindFileData) && hFind != INVALID_HANDLE_VALUE);
+
+	FindClose(hFind);
+}
