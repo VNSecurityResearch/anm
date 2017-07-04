@@ -74,3 +74,6 @@ https://getmdl.io/index.html
 https://www.burakkanber.com/tag/ml-in-js/page/2/
 https://hackernoon.com/tagged/ml-with-js
 https://tutorialzine.com/2017/04/10-machine-learning-examples-in-javascript
+
+# Python
+https://automatetheboringstuff.com/
