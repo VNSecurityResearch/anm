@@ -77,3 +77,29 @@ https://tutorialzine.com/2017/04/10-machine-learning-examples-in-javascript
 
 # Python
 https://automatetheboringstuff.com/
+
+# CTF
+Assembly Language
+https://www.tutorialspoint.com/assembly_programming/
+https://sensepost.com/blogstatic/2014/01/SensePost_crash_course_in_x86_assembly-.pdf
+https://software.intel.com/sites/default/files/m/d/4/1/d/8/Introduction_to_x64_Assembly.pdf
+
+Reverse Engineering
+https://securedorg.github.io/RE101/
+https://securedorg.github.io/RE102/
+https://qmemcpy.github.io/post/ida-series-1-hex-rays
+https://qmemcpy.github.io/post/ida-series-2-debugging-net
+
+Application Exploitation
+https://www.fuzzysecurity.com/tutorials.html
+https://securitycafe.ro/2015/10/30/introduction-to-windows-shellcode-development-part1/
+https://securitycafe.ro/2015/12/14/introduction-to-windows-shellcode-development-part-2/
+https://securitycafe.ro/2016/02/15/introduction-to-windows-shellcode-development-part-3/
+
+Web Exploitation
+
+Malware Analysis
+http://fumalwareanalysis.blogspot.com/p/malware-analysis-tutorials-reverse.html
+https://www.blackhat.com/presentations/bh-usa-07/Yason/Whitepaper/bh-usa-07-yason-WP.pdf
+
+Cryptography
