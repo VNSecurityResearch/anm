@@ -103,3 +103,6 @@ http://fumalwareanalysis.blogspot.com/p/malware-analysis-tutorials-reverse.html
 https://www.blackhat.com/presentations/bh-usa-07/Yason/Whitepaper/bh-usa-07-yason-WP.pdf
 
 Cryptography
+
+# Laravel
+https://toidicode.com/
