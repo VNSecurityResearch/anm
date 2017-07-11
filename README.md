@@ -35,6 +35,7 @@ https://0xax.github.io/asm_8/
 https://en.wikibooks.org/wiki/X86_Assembly/Floating_Point
 https://www.csee.umbc.edu/courses/undergraduate/313/spring08/burt/lectures/File_IO/StrToFlt.html
 https://www.codeproject.com/Articles/2604/Browse-Folder-dialog-search-folder-and-all-sub-fol
+https://dcravey.wordpress.com/2011/03/21/using-sqlite-in-a-visual-c-application/
 
 ## CTF
 https://www.quora.com/How-do-I-prepare-for-capture-the-flag-hacking-competition
