@@ -110,3 +110,4 @@ https://toidicode.com/
 
 # Xamarin
 https://blog.xamarin.com/barcode-scanning-made-easy-with-zxing-net-for-xamarin-forms/
+https://github.com/Microsoft/VisualStudioUninstaller/releases
