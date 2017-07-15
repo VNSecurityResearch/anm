@@ -84,6 +84,7 @@ Assembly Language
 https://www.tutorialspoint.com/assembly_programming/
 https://sensepost.com/blogstatic/2014/01/SensePost_crash_course_in_x86_assembly-.pdf
 https://software.intel.com/sites/default/files/m/d/4/1/d/8/Introduction_to_x64_Assembly.pdf
+https://beginners.re/RE4B-EN.pdf
 
 Reverse Engineering
 https://securedorg.github.io/RE101/
