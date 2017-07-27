@@ -113,3 +113,6 @@ https://toidicode.com/
 https://blog.xamarin.com/barcode-scanning-made-easy-with-zxing-net-for-xamarin-forms/
 https://github.com/Microsoft/VisualStudioUninstaller/releases
 http://csc.edu.vn/tin-tuc/Tin-tuc-Trung-tam-tin-hoc/Lap-trinh-Xamarin-cho-nguoi-moi-bat-dau-804
+
+# Unpack
+https://www.youtube.com/watch?v=HO3CZIiD4P8
