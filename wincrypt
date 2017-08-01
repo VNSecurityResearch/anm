@@ -1,0 +1,92 @@
+#include <Windows.h>
+#include <stdio.h>
+#include <conio.h>
+#include <wincrypt.h>
+
+#define LEN 20 
+
+int cal();
+
+int eax18 = 0x1337;
+int ecx;
+int eax;
+int edx;
+
+int main() {
+	char name[80] = "";
+	printf("WinCrypt--------------------\n");
+	printf("Name: ");
+	scanf("%s", &name);
+
+	char fullname[80] = "";
+	char temp[10] = "";
+	for (int i = 0; i < strlen(name); i++) {
+		strcpy(temp, name[i]);
+		strcat(fullname, temp);
+		strcat(fullname, 0);
+	}
+	printf(fullname);
+
+	HCRYPTPROV hProv;
+	HCRYPTHASH hHash;
+
+	if (!CryptAcquireContext(&hProv, 0, 0, 1, 0xF0000000)) {
+		printf("CryptAcquireContext fail\n");
+		return 0;
+	}
+	printf("%x", hProv);
+
+	if (!CryptCreateHash(hProv, 0x8004, 0, 0, &hHash)) {
+		printf("CryptCreateHash fail\n");
+		return 0;
+	}
+	printf("%x", hHash);
+
+	DWORD cbHash = LEN;
+	DWORD cbRead = strlen(name) * 2;															
+
+	if (!CryptHashData(hHash, (PBYTE) fullname, cbRead, 0)) {
+		printf("CryptHashData faild\n");
+		return 0;
+	}
+	printf("%x", hHash);
+
+	BYTE buffer[80] = "";
+	if (!CryptGetHashParam(hHash, HP_HASHVAL, buffer, &cbHash, 0)) {
+		printf("CryptGetHashParam faild\n");
+		return 0;
+	}
+
+	printf("%x\n", buffer);
+
+	//char result[80] = "";
+	//char temp[10] = "";
+	//int dem = LEN;
+	//while (dem > 0) {
+	//	eax = cal();
+	//	ecx = text[dem];
+	//	eax *= ecx;
+	//	ecx = 0x1a;
+	//	// eax = eax / ecx;
+	//	edx = eax % ecx;
+	//	ecx = 0;
+	//	edx += 0x61;
+	//	eax = edx;
+	//	wsprintf(temp, "%X", eax);
+	//	strcat(result, temp);
+	//}
+	//
+	//printf(result);
+		
+	getch();
+	return 0;
+}
+
+int cal() {
+	ecx = eax18 * 0x343FD;
+	ecx += 0x269EC3;
+	eax18 = ecx;
+	ecx = ecx >> 10;
+	ecx = ecx & 0x00007FFF;
+	return ecx;
+}
