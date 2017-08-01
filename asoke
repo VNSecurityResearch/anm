@@ -1,0 +1,80 @@
+def htoi(s):
+    s = str(s).lower()
+    if s == "a":
+        return 10
+    elif s == "b":
+        return 11
+    elif s == "c":
+        return 12
+    elif s == "d":
+        return 13
+    elif s == "e":
+        return 14
+    elif s == "f":
+        return 15
+    else:
+        return int(s)
+
+def fill_zero(s):
+    s = s.replace("0x","")
+    while len(s) < 8:
+        s = "0" + s
+
+    return "0x" + s
+
+def ror8(x):
+    x = fill_zero(hex(x))
+    length = len(x)
+    result = 0
+    result += htoi(x[length - 2]) * (16 ** (length - 3))
+    result += htoi(x[length - 1]) * (16 ** (length - 4))
+    for i in range(2, length - 2):
+        result += htoi(x[i]) * (16 ** (length - i - 3))
+
+    return result
+
+def serial(source_str):
+    base = 0xCAFEBABE
+
+    for c in source_str:
+        h = ord(c)
+        base += h
+        base = ror8(base)
+
+    low = base
+    high = low * 0x1337
+    high = high & 0xffffffff
+    low = low ^ 0x00001337
+
+    low = fill_zero(hex(low))
+    high = fill_zero(hex(high))
+    serial = high.replace("0x","") + "-" + low.replace("0x","") + "\n"
+    return serial.lower()
+
+import socket
+import re
+
+s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+s.connect(("10.61.214.216", 9001))
+i = 1
+while i <= 501:
+    data = s.recv(1024)
+    if data == "":
+        break
+
+    name = data.decode("ASCII")
+    print(str(i) + "-" + name)
+    name = re.sub(r'[\W_]+', '', name)
+    name = name[-8:]
+    # print(str(i) + "-" + name)
+    if(name != ""):
+        code = serial(name)
+        print(code)
+        s.send(code.encode())
+    i += 1
+
+# flag{I_am_Bashful}
+
+print("Connection closed.")
+s.shutdown(socket.SHUT_WR)
+s.close()
