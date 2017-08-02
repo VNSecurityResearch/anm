@@ -1,0 +1,202 @@
+#define WIN_OS 1
+#define WIN32_LEAN_AND_MEAN
+#include<windows.h>
+#include<winsock2.h>
+#include<ws2tcpip.h>
+#include<stdio.h>
+#include<stdlib.h>
+#include<commctrl.h>
+#include<mswsock.h>
+#include<conio.h>
+#include<wincrypt.h>
+#include<string.h>
+
+#define LEN 20 
+#define SUCCESS 1
+#define FAIL 0
+#define PORT "9002"
+#define IP "10.61.214.216"
+
+int cal();
+int strtoi(char *);
+void wincript(wchar_t *);
+
+int eax18;
+int ecx;
+int eax;
+int edx;
+int clientSocket;
+
+char encrypt_str[80] = "";
+
+int main() {
+	wchar_t name[80] = L"";
+	
+	printf("WinCrypt--------------------\n");
+	/*do {
+		eax18 = 0x1337;
+		ecx = 0;
+		eax = 0;
+		edx = 0;
+
+		printf("Name: ");
+		wscanf(L"%s", &name);
+
+		wincript(name);
+		printf("%s\n", encrypt_str);
+	} while (wcscmp(name, L"quit") != 0);*/
+
+	struct sockaddr_in servaddr;
+	WSADATA wsa = {};
+
+	if (WSAStartup(WINSOCK_VERSION, &wsa)) {
+		printf("Could not Start windows socket library!\n");
+		return 0;
+	}
+
+	clientSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+
+	servaddr.sin_family = AF_INET;
+	inet_pton(AF_INET, IP, &(servaddr.sin_addr));
+	servaddr.sin_port = htons(atoi(PORT));
+	if (connect(clientSocket, (struct sockaddr *)&servaddr, sizeof(servaddr)) < 0) {
+		printf("Could not establish new connection!\n");
+		return 0;
+	}
+
+	int dem = 0;
+	while (dem < 501) {
+		eax18 = 0x1337;
+		ecx = 0;
+		eax = 0;
+		edx = 0;
+
+		wchar_t temp[80] = L"";
+		char buffer[1024] = "";
+		if (recv(clientSocket, buffer, sizeof(buffer), 0) > 0) {
+			printf("%d, %s\n", (dem+1), buffer);
+			char *result = strstr(buffer, "ame: ");
+			if (result == 0) {
+				break;
+			}
+			int pos = result - buffer;
+			swprintf(temp, L"%hs", &buffer[pos + 5]);
+
+			temp[wcslen(temp) - 1] = 0;
+			temp[wcslen(temp) - 1] = 0;
+
+			wincript(temp);
+			printf("%s", encrypt_str);
+
+			if (send(clientSocket, encrypt_str, strlen(encrypt_str), 0) == SOCKET_ERROR) {
+				printf("Can't send!\n");
+				return 0;
+			}
+			else {
+				printf("Sent\n");
+			}
+		}
+		else {
+			printf("No response!\n");
+		}
+		dem++;
+	}
+
+	closesocket(clientSocket);
+	WSACleanup();
+		
+	getch();
+	return 0;
+}
+
+int cal() {
+	ecx = eax18 * 0x343FD;
+	ecx += 0x269EC3;
+	eax18 = ecx;
+	ecx = ecx >> 0x10;
+	ecx = ecx & 0x00007FFF;
+	return ecx;
+}
+
+int strtoi(char me) {
+	return (int)strtol(&me, NULL, 16);
+}
+
+void wincript(wchar_t *name) {
+	memset(encrypt_str, 0, sizeof(encrypt_str));
+
+	HCRYPTPROV hProv = 0;
+	HCRYPTHASH hHash = 0;
+
+	if (!CryptAcquireContext(&hProv, 0, 0, 1, 0xF0000000)) {
+		printf("CryptAcquireContext fail\n");
+		return;
+	}
+
+	if (!CryptCreateHash(hProv, 0x8004, 0, 0, &hHash)) {
+		printf("CryptCreateHash fail\n");
+		return;
+	}
+
+	if (!CryptHashData(hHash, (PBYTE)name, wcslen(name) * 2, 0)) {
+		printf("CryptHashData faild\n");
+		return;
+	}
+
+	DWORD cbHash = LEN;
+	BYTE buffer[256] = "";
+	char text[256] = "";
+	char digits[] = "0123456789abcdef";
+	if (CryptGetHashParam(hHash, HP_HASHVAL, buffer, &cbHash, 0)) {
+		int j = 0;
+		for (DWORD i = 0; i < cbHash; i++) {
+			text[j++] = digits[buffer[i] >> 4];	// Dich sang phai 4 bits
+			text[j++] = digits[buffer[i] & 0xf];
+		}
+	}
+	else {
+		printf("CryptGetHashParam faild\n");
+		return;
+	}
+
+	//printf("%s\n", text);
+
+	char result[80] = "";
+	int i = 0;
+
+	while (i < LEN * 2) {
+		int tam = 0;
+
+		eax = cal();
+		//printf("%x ", eax);
+
+		tam += strtoi(text[i++]);
+		tam *= 16;
+		//printf("%d ", tam);
+		tam += strtoi(text[i++]);
+		ecx = tam;
+		//printf("%d ", ecx);
+
+		eax *= ecx;
+		ecx = 0x1a;
+		edx = eax % ecx;
+		ecx = 0;
+		edx += 0x61;
+		eax = edx;
+		//printf("%c\n", eax);
+
+		char temp2[10] = "";
+		wsprintf(temp2, "%c", eax);
+		strcat(result, temp2);
+
+		if (i % 5 == 0 && i < LEN * 2) {
+			strcat(result, "-");
+		}
+	}
+	strcat(result, "\n");
+
+	CryptReleaseContext(hProv, 0);
+	CryptDestroyHash(hHash);
+
+	strcpy(encrypt_str, result);
+}
