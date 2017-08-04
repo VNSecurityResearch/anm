@@ -37,12 +37,6 @@ https://www.csee.umbc.edu/courses/undergraduate/313/spring08/burt/lectures/File_
 https://www.codeproject.com/Articles/2604/Browse-Folder-dialog-search-folder-and-all-sub-fol
 https://dcravey.wordpress.com/2011/03/21/using-sqlite-in-a-visual-c-application/
 
-## CTF
-https://www.quora.com/How-do-I-prepare-for-capture-the-flag-hacking-competition
-https://www.root-me.org/?lang=en
-http://pwnable.kr/
-reversing.kr
-
 ## C Programming
 https://msdn.microsoft.com/en-us/library/windows/desktop/aa382380(v=vs.85).aspx
 https://www.3dbuzz.com/forum/threads/119390-Simple-OpenFileDialog-example
@@ -80,6 +74,11 @@ https://tutorialzine.com/2017/04/10-machine-learning-examples-in-javascript
 https://automatetheboringstuff.com/
 
 # CTF
+https://www.quora.com/How-do-I-prepare-for-capture-the-flag-hacking-competition
+https://www.root-me.org/?lang=en
+http://pwnable.kr/
+reversing.kr
+
 Assembly Language
 https://www.tutorialspoint.com/assembly_programming/
 https://sensepost.com/blogstatic/2014/01/SensePost_crash_course_in_x86_assembly-.pdf
@@ -121,3 +120,6 @@ https://www.exetools.com/unpackers.htm
 # Tensorflow
 https://medium.com/towards-data-science/how-to-train-your-own-object-detector-with-tensorflows-object-detector-api-bec72ecfe1d9
 https://medium.com/towards-data-science/building-a-real-time-object-recognition-app-with-tensorflow-and-opencv-b7a2b4ebdc32
+
+# ML
+https://medium.com/airbnb-engineering/using-machine-learning-to-predict-value-of-homes-on-airbnb-9272d3d4739d
