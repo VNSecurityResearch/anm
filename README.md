@@ -117,3 +117,6 @@ http://csc.edu.vn/tin-tuc/Tin-tuc-Trung-tam-tin-hoc/Lap-trinh-Xamarin-cho-nguoi-
 # Unpack
 https://www.youtube.com/watch?v=HO3CZIiD4P8
 https://www.exetools.com/unpackers.htm
+
+# Tensorflow
+https://medium.com/towards-data-science/how-to-train-your-own-object-detector-with-tensorflows-object-detector-api-bec72ecfe1d9
