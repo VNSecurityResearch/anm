@@ -1,4 +1,5 @@
 import math
+from random import shuffle
 
 
 def fill_zero(n):
@@ -50,177 +51,320 @@ def bit_not(n):
     return int(result, 2)
 
 
-eax = 0x64636261
-
-ebx = 0x7b2ece63
-eax = bit_not(eax)
-edx = 0x654f0e9c
-eax = en(eax + edx)
-eax, ebx = swap(eax, ebx)
-eax = 0x7f8b6ea6
-ebp = 0x653d93c8
-ebx = bu2(ebx - ebp)
-ebp = 0xadea7de6
-ebx = bu2(ebx - ebp)
-edx = 0x6faa838e
-ecx = 0x1f68bfb0
-ebx = bu2(ebx - ecx)
-ebx = bit_not(ebx)
-edx = 0xfd11e26d
-ebx = en(ebx + edx)
-ebp = 0xe7c96e0a
-ebx = bu2(ebx - ebp)
-edi = 0x366ee99b6
-ecx = 0x4d6957ea
-ebx = ror(ebx, 0x1e)
-eax = 0xcbaa27dd
-ebx = en(ebx + eax)
-ecx = 0xfcabebff
-ebx = bit_not(ebx)
-edx = 0xade67923
-ebx = en(ebx + edx)
-ebx = bit_not(ebx)
-eax = 0xe96d2b49
-ebx = bu2(ebx - eax)
-edx = 0x70ce0c6f
-ebx = ebx ^ edx
-edx = 0xc49e9e32
-eax = 0x964de05a
-ebp = 0x93bb2002
-ebx = bu2(ebx - ebp)
-ebx, edx = swap(ebx, edx)
-esi = 0x80db8182
-edx = bu2(edx - esi)
-eax = 0xa26ea099
-edx = bu2(edx - eax)
-
-edx = bit_not(edx)
-ebx = 0x185dde4f
-edx = bu2(edx - ebx)
-edx = rol(edx, 0x66)
-esi = 0xdfd46071
-edx = ror(edx, 0x54)
-edx, ebp = swap(edx, ebp)
-ebp = rol(ebp, 0x5c)
-ebp = bit_not(ebp)
-ebp, edi = swap(ebp, edi)
-edi = ror(edi, 0x35)
-edx = 0x9e8b974d
-edi, esi = swap(edi, esi)
-esi, edx = swap(esi, edx)
-esi = 0xd9dc07a8
-edx = en(edx + esi)
-edx = rol(edx, 0x33)
-edi = 0xc21ae935
-edx = edx ^ edi
-ecx = 0x8b68b365
-edx = en(edx + ecx)
-edx = ror(edx, 0x3c)
-edx, ecx = swap(edx, ecx)
-ebx = 0x80aea59
-ecx = bu2(ecx - ebx)
-edi = 0xd830d580
-ecx = ecx ^ edi
-eax = 0xdffdd910
-ecx = bu2(ecx - eax)
-ecx = ror(ecx, 0x0c7)
-esi = 0xc2da46f2
-esi = 0x68c65aba
-ecx = ecx ^ esi
-ecx = rol(ecx, 0x1c)
-esi = 0xaed42ef8
-ecx = rol(ecx, 0x0a3)
-ecx = rol(ecx, 0x83)
-ebp = 0x791dbc7f
-ecx = en(ecx + ebp)
-ecx = bit_not(ecx)
-eax = 0x43e7b0be
-ecx = ror(ecx, 0x9a)
-eax = 0xf0716a5a
-ecx = en(ecx + eax)
-ecx = bit_not(ecx)
-ecx = bit_not(ecx)
-eax = 0x7eeb8405
-ecx = en(ecx + eax)
-esi = 0x674a9997
-ecx = ecx ^ esi
-ecx = rol(ecx, 0x3e)
-ecx = bit_not(ecx)
-esi = 0xdeeaf5b9
-ecx = bu2(ecx - esi)
-
-ecx = ror(ecx, 0x5f)
-ecx = ror(ecx, 0x0d1)
-ebp = 0xbf7a4543
-ecx = en(ecx + ebp)
-eax = 0xba3d58cb
-ecx = en(ecx + eax)
-ecx = ror(ecx, 0x0c7)
-ecx = bit_not(ecx)
-eax = 0x70a023c1
-ecx = ecx ^ eax
-edi = 0x551d7309
-ecx = rol(ecx, 0x9e)
-ecx = bit_not(ecx)
-ebx = 0xca5e0e62
-ecx = en(ecx + ebx)
-ecx = rol(ecx, 0x0e0)
-ebx = 0x9a20446a
-ecx = ecx ^ ebx
-edx = 0xcc62ca61
-ecx = ecx ^ edx
-esi = 0xfc432894
-ecx = bu2(ecx - esi)
-ecx = bit_not(ecx)
-ecx = ror(ecx, 0x0bd)
-ecx, esi = swap(ecx, esi)
-esi, ebx = swap(esi, ebx)
-ebx = ror(ebx, 0xc4)
-ecx = 0x448ecf6d
-eax = 0x9fe592f8
-ecx = 0xb3248891
-ebx = bu2(ebx - ecx)
-ebp = 0x87026a88
-ebx = ebx ^ ebp
-ebx = bit_not(ebx)
-eax, ebx = swap(eax, ebx)
-eax = bit_not(eax)
-ebx = 0xb485da4c
-eax = rol(eax, 0x5)
-ecx = 0x1dd24d22
-ecx = 0x61a4c84b
-eax, ecx = swap(eax, ecx)
-ecx = rol(ecx, 0x0e5)
-ecx = bit_not(ecx)
-ecx = ror(ecx, 0x26)
-ecx, edx = swap(ecx, edx)
-ebx = 0x4cdc6bd5
-edx = edx ^ ebx
-edx = bit_not(edx)
-ebp = 0x91a796e2
-esi = 0x464a9ae
-edx = bu2(edx - esi)
-edx, ecx = swap(edx, ecx)
-ebx = 0xd21b9ada
-ecx = bu2(ecx - ebx)
-ecx = ror(ecx, 0x0bf)
-edx = 0x0eb4f5e6
-ecx = ecx ^ edx
-ecx = ror(ecx, 0x0c9)
-edx = 0xff8ed7ba
-ecx = en(ecx + edx)
-ecx, edi = swap(ecx, edi)
-ecx = 0x397387d3
-edi = ror(edi, 0x37)
-edi = ror(edi, 0x23)
-ebp = 0x7c4795e5
+def test():
+    print("EAX " + hex(eax))
+    print("ECX " + hex(ecx))
+    print("EDX " + hex(edx))
+    print("EBX " + hex(ebx))
+    print("EBP " + hex(ebp))
+    print("ESI " + hex(esi))
+    print("EDI " + hex(edi))
 
 
+def cal(mine):
+    eax = int(mine, 16)
 
-print("EAX " + hex(eax))
-print("ECX " + hex(ecx))
-print("EDX " + hex(edx))
-print("EBX " + hex(ebx))
-print("EBP " + hex(ebp))
-print("ESI " + hex(esi))
-print("EDI " + hex(edi))
+    ebx = 0x7b2ece63
+    eax = bit_not(eax)
+    edx = 0x654f0e9c
+    eax = en(eax + edx)
+    eax, ebx = swap(eax, ebx)
+    eax = 0x7f8b6ea6
+    ebp = 0x653d93c8
+    ebx = bu2(ebx - ebp)
+    ebp = 0xadea7de6
+    ebx = bu2(ebx - ebp)
+    edx = 0x6faa838e
+    ecx = 0x1f68bfb0
+    ebx = bu2(ebx - ecx)
+    ebx = bit_not(ebx)
+    edx = 0xfd11e26d
+    ebx = en(ebx + edx)
+    ebp = 0xe7c96e0a
+    ebx = bu2(ebx - ebp)
+    edi = 0x36ee99b6
+    ecx = 0x4d6957ea
+    ebx = ror(ebx, 0x1e)
+    eax = 0xcbaa27dd
+    ebx = en(ebx + eax)
+    ecx = 0xfcabebff
+    ebx = bit_not(ebx)
+    edx = 0xade67923
+    ebx = en(ebx + edx)
+    ebx = bit_not(ebx)
+    eax = 0xe96d2b49
+    ebx = bu2(ebx - eax)
+    edx = 0x70ce0c6f
+    ebx = ebx ^ edx
+    edx = 0xc49e9e32
+    eax = 0x964de05a
+    ebp = 0x93bb2002
+    ebx = bu2(ebx - ebp)
+    ebx, edx = swap(ebx, edx)
+    esi = 0x80db8182
+    edx = bu2(edx - esi)
+    eax = 0xa26ea099
+    edx = bu2(edx - eax)
+
+    edx = bit_not(edx)
+    ebx = 0x185dde4f
+    edx = bu2(edx - ebx)
+    edx = rol(edx, 0x66)
+    esi = 0xdfd46071
+    edx = ror(edx, 0x54)
+    edx, ebp = swap(edx, ebp)
+    ebp = rol(ebp, 0x5c)
+    ebp = bit_not(ebp)
+    ebp, edi = swap(ebp, edi)
+    edi = ror(edi, 0x35)
+    edx = 0x9e8b974d
+    edi, esi = swap(edi, esi)
+    esi, edx = swap(esi, edx)
+    esi = 0xd9dc07a8
+    edx = en(edx + esi)
+    edx = rol(edx, 0x33)
+    edi = 0xc21ae935
+    edx = edx ^ edi
+    ecx = 0x8b68b365
+    edx = en(edx + ecx)
+    edx = ror(edx, 0x3c)
+    edx, ecx = swap(edx, ecx)
+    ebx = 0x80aea59
+    ecx = bu2(ecx - ebx)
+    edi = 0xd830d580
+    ecx = ecx ^ edi
+    eax = 0xdffdd910
+    ecx = bu2(ecx - eax)
+    ecx = ror(ecx, 0x0c7)
+    esi = 0xc2da46f2
+    esi = 0x68c65aba
+    ecx = ecx ^ esi
+    ecx = rol(ecx, 0x1c)
+    esi = 0xaed42ef8
+    ecx = rol(ecx, 0x0a3)
+    ecx = rol(ecx, 0x83)
+    ebp = 0x791dbc7f
+    ecx = en(ecx + ebp)
+    ecx = bit_not(ecx)
+    eax = 0x43e7b0be
+    ecx = ror(ecx, 0x9a)
+    eax = 0xf0716a5a
+    ecx = en(ecx + eax)
+    ecx = bit_not(ecx)
+    ecx = bit_not(ecx)
+    eax = 0x7eeb8405
+    ecx = en(ecx + eax)
+    esi = 0x674a9997
+    ecx = ecx ^ esi
+    ecx = rol(ecx, 0x3e)
+    ecx = bit_not(ecx)
+    esi = 0xdeeaf5b9
+    ecx = bu2(ecx - esi)
+
+    ecx = ror(ecx, 0x5f)
+    ecx = ror(ecx, 0x0d1)
+    ebp = 0xbf7a4543
+    ecx = en(ecx + ebp)
+    eax = 0xba3d58cb
+    ecx = en(ecx + eax)
+    ecx = ror(ecx, 0x0c7)
+    ecx = bit_not(ecx)
+    eax = 0x70a023c1
+    ecx = ecx ^ eax
+    edi = 0x551d7309
+    ecx = rol(ecx, 0x9e)
+    ecx = bit_not(ecx)
+    ebx = 0xca5e0e62
+    ecx = en(ecx + ebx)
+    ecx = rol(ecx, 0x0e0)
+    ebx = 0x9a20446a
+    ecx = ecx ^ ebx
+    edx = 0xcc62ca61
+    ecx = ecx ^ edx
+    esi = 0xfc432894
+    ecx = bu2(ecx - esi)
+    ecx = bit_not(ecx)
+    ecx = ror(ecx, 0x0bd)
+    ecx, esi = swap(ecx, esi)
+    esi, ebx = swap(esi, ebx)
+    ebx = ror(ebx, 0x0c4)
+    ecx = 0x448ecf6d
+    eax = 0x9fe592f8
+    ecx = 0xb32a8891
+    ebx = bu2(ebx - ecx)
+    ebp = 0x87026a88
+    ebx = ebx ^ ebp
+    ebx = bit_not(ebx)
+    eax, ebx = swap(eax, ebx)
+    eax = bit_not(eax)
+    ebx = 0xb485da4c
+    eax = rol(eax, 0x5)
+    ecx = 0x1dd24d22
+    ecx = 0x61a4c84b
+    eax, ecx = swap(eax, ecx)
+    ecx = rol(ecx, 0x0e5)
+    ecx = bit_not(ecx)
+    ecx = ror(ecx, 0x26)
+    ecx, edx = swap(ecx, edx)
+    ebx = 0x4cdc6bd5
+    edx = edx ^ ebx
+    edx = bit_not(edx)
+    ebp = 0x91a796e2
+    esi = 0x464a9ae
+    edx = bu2(edx - esi)
+    edx, ecx = swap(edx, ecx)
+    ebx = 0xd21b9ada
+    ecx = bu2(ecx - ebx)
+    ecx = ror(ecx, 0x0bf)
+    edx = 0x0eb4f5e6
+    ecx = ecx ^ edx
+    ecx = ror(ecx, 0x0c9)
+    edx = 0xff8ed7ba
+    ecx = en(ecx + edx)
+    ecx, edi = swap(ecx, edi)
+    ecx = 0x397387d3
+    edi = ror(edi, 0x37)
+    edi = ror(edi, 0x23)
+    ebp = 0x7c4795e5
+
+    ecx = 0x666D8E8E
+    edi = edi ^ ecx
+    esi = 0xC0A87B2C
+    edi = edi ^ esi
+    ebp = 0x8070B369
+    edi = bu2(edi - ebp)
+    edi, ebx = swap(edi, ebx)
+    ebx = rol(ebx, 0x4D)
+    ebx = bit_not(ebx)
+    ebx = ror(ebx, 0x2F)
+    ebx, edi = swap(ebx, edi)
+    eax = 0xD140FA0C
+    edx = 0x512AB834
+    esi = 0xAB957B26
+    ebx = 0xEF8E4B0F
+    edi = bu2(edi - ebx)
+    edi, ecx = swap(edi, ecx)
+    eax = 0x7917BF5A
+    ecx = bu2(ecx - eax)
+    ecx = bit_not(ecx)
+    edi = 0x83A56300
+    ecx = bu2(ecx - edi)
+    ecx = bit_not(ecx)
+    eax = 0xC6905118
+    ecx = bit_not(ecx)
+    esi = 0x625D729C
+    ecx = ecx ^ esi
+    ecx = rol(ecx, 0x0E6)
+    ecx = ror(ecx, 0x0fe)
+    ecx = bit_not(ecx)
+    ebx = 0xC5FBDA07
+    ecx = bu2(ecx - ebx)
+    ecx = bit_not(ecx)
+    esi = 0x27D8E1FF
+    ecx = en(ecx + esi)
+    ebp = 0xEEEA2F5E
+    ecx = en(ecx + ebp)
+    ebx = 0x281A9312
+    ecx = rol(ecx, 0x77)
+    ecx, esi = swap(ecx, esi)
+    esi, ebx = swap(esi, ebx)
+    esi = 0x4039E40A
+    ebx = bit_not(ebx)
+    ebx, ecx = swap(ebx, ecx)
+
+    ecx, esi = swap(ecx, esi)
+    esi = ror(esi, 0x0E)
+    esi = bit_not(esi)
+    ecx = 0x33DE6D1A
+    esi = en(esi + ecx)
+    ebp = 0xAF62BF1B
+    esi = en(esi + ebp)
+    edx = 0x227E04E3
+    ebp = 0xB5845F8E
+    esi = rol(esi, 0x4A)
+    esi, edx = swap(esi, edx)
+    eax = 0x51C13825
+    edx = edx ^ eax
+    edx = bit_not(edx)
+    edx = bit_not(edx)
+    edx = bit_not(edx)
+    eax = 0xC11E1319
+    edx = bu2(edx - eax)
+    edx = bit_not(edx)
+    ebx = 0x39362AAA
+    edx = edx ^ ebx
+    eax = 0x26119166
+    edx = bu2(edx - eax)
+    ecx = 0xDCB465E9
+    ecx = 0x547281AD
+    edx = edx ^ ecx
+    ecx = 0xC83E9EB4
+    edx = edx ^ ecx
+    edx = rol(edx, 0x0F3)
+    ebx = 0x9EB56607
+    edx = rol(edx, 0x0A3)
+    ebp = 0x7E17FBEF
+    edx = edx ^ ebp
+    edx = bit_not(edx)
+    edi = 0xCB51AAA3
+    edx = edx ^ edi
+    ebx = 0x660868CB
+    edx = edx ^ ebx
+    ecx = 0xF4DFEF0A
+    edx = edx ^ ecx
+    edi = 0x8BEE3321
+    edx = bit_not(edx)
+    edx = bit_not(edx)
+    ecx = 0x4F3B807E
+    ebx = 0xF2C36B8C
+    edx = en(edx + ebx)
+    eax = 0xA5A9F06F
+    edx = ror(edx, 0x0F3)
+    edx = rol(edx, 0x0E)
+    ebp = 0xC6EF4880
+    edx = edx ^ ebp
+    ebp = 0x321D7CB5
+    edx = bu2(edx - ebp)
+
+    return edx
+
+
+def asciitohex(into):
+    out = ""
+    for c in into:
+        out = out + ("0" + ((hex(ord(c)))[2:]))[-2:]
+
+    return "0x" + out
+
+
+string = "abcdefghiklmnopqrstuvwxyz_"
+string = list(string)
+shuffle(string)
+print(string)
+string_need = [0x414F7064, 0x689B76F9, 0xA80E951D]
+# chester_numb
+
+dem = 0
+for i in string:
+    if dem == 3:
+        break
+    for j in string:
+        if dem == 3:
+            break
+        for k in string:
+            if dem == 3:
+                break
+            for t in string:
+                if dem == 3:
+                    break
+                me = asciitohex(i + "" + j + "" + k + "" + t)
+                result = cal(me)
+                for s in string_need:
+                    if result == s:
+                        dem += 1
+                        print(me + " match " + hex(s))
+                        break
+
+
+
+
