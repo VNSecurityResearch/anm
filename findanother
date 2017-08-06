@@ -1,0 +1,45 @@
+ecx = 0x666D8E8E
+edi = edi ^ ecx
+esi = 0xC0A87B2C
+edi = edi ^ esi
+ebp = 0x8070B369
+edi = bu2(edi - ebp)
+edi, ebx = swap(edi, ebx)
+ebx = rol(ebx, 0x4D)                               
+ebx = bit_not(ebx)
+ebx = ror(ebx 0x2F)                               
+ebx, edi = swap(ebx, edi)
+eax = 0xD140FA0C
+edx = 0x512AB834
+esi = 0xAB957B26
+ebx = 0xEF8E4B0F
+edi = bu2(edi - ebx)
+edi, ecx = swap(edi, ecx)
+eax = 0x7917BF5A
+ecx = bu2(ecx - eax)
+ecx = bit_not(ecx)
+edi = 0x83A56300
+ecx = bu2(ecx - edi)
+ecx = bit_not(ecx)
+eax = 0xC6905118
+ecx = bit_not(ecx)
+esi = 0x625D729C
+XOR ecx,esi
+ROL ecx,0E6                              
+ROR ecx,0FE                              
+ecx = bit_not(ecx)
+ebx = 0xC5FBDA07
+ecx = bu2(ecx - ebx)
+ecx = bit_not(ecx)
+esi = 0x27D8E1FF
+ecx = en(ecx + esi)
+ebp = 0xEEEA2F5E
+ecx = en(ecx + ebp)
+ebx = 0x281A9312
+ecx = rol(ecx, 0x77)                               
+ecx, esi = swap(ecx, esi)
+esi, ebx = swap(esi, ebx)
+esi = 0x4039E40A
+ebx = bit_not(ebx)
+ebx, ecx = swap(ebx, ecx)
+
