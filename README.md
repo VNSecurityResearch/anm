@@ -124,3 +124,4 @@ https://medium.com/towards-data-science/building-a-real-time-object-recognition-
 # ML
 https://medium.com/airbnb-engineering/using-machine-learning-to-predict-value-of-homes-on-airbnb-9272d3d4739d
 https://medium.com/towards-data-science/spam-classifier-in-python-from-scratch-27a98ddd8e73
+https://medium.freecodecamp.org/every-single-machine-learning-course-on-the-internet-ranked-by-your-reviews-3c4a7b8026c0
