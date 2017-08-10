@@ -1,0 +1,106 @@
+import math
+from random import shuffle
+
+
+def fill_zero(n, max = 32):
+    n = n[2:]
+    result = n
+    while len(result) < max:
+        result = "0" + result
+    return result
+
+
+def ror8(n, num):
+    num = num - (math.floor(num / 8) * 8)
+    nb = fill_zero(bin(n), 8)
+    return int(nb[(8 - num):] + "" + nb[0:(8 - num)], 2)
+
+
+def rol8(n, num):
+    num = num - (math.floor(num / 8) * 8)
+    nb = fill_zero(bin(n), 8)
+    return int(nb[num:] + "" + nb[0:num], 2)
+
+
+def rol(n, num):
+    num = num - (math.floor(num / 32) * 32)
+    nb = fill_zero(bin(n))
+    return int(nb[num:] + "" + nb[0:num], 2)
+
+
+def shl(n, num):
+    if n != 1:
+        temp = fill_zero(bin(n))
+        temp = temp[num:len(temp)]
+        for i in range(0, num):
+            temp += "0"
+        return int(temp, 2)
+    else:
+        return 0
+
+
+def bu2(n):
+    if n < 0:
+        return 2 ** 32 + n
+    else:
+        return n
+
+
+def cal(me_origin = "0000"):
+    me_origin = list(me_origin)
+    me = []
+    for i in me_origin:
+        me.append(ord(i))
+
+    eax = me[2]
+    eax = rol8(eax, 0x2)
+    esi = eax
+
+    eax = me[0]
+    eax += 0x12
+    ecx = eax
+
+    eax = me[1]
+    eax = eax - 0x78 + 2**8
+    ecx = shl(ecx, 0x8)
+    ecx = ecx | eax
+
+    eax = me[3]
+    ecx = shl(ecx, 0x8)
+    esi = esi | ecx
+    eax = ror8(eax, 0x4)
+    esi = shl(esi, 0x8)
+    esi = esi | eax
+
+    return esi
+
+
+string = "abcdefghiklmnopqrstuvwxyz_{}ABCDEFGHIKLMNOPQRSTUVWXYZ"
+string = list(string)
+shuffle(string)
+
+check = False
+for a in string:
+    if check:
+        break
+    for b in string:
+        if check:
+            break
+        for c in string:
+            if check:
+                break
+            for d in string:
+                if check:
+                    break
+                raw = a + "" + b + "" + c + "" + d
+                me = cal(raw)
+                me += 0xbabecafe
+                me = rol(me, 0x6)
+                me = bu2(0x13371337 - me)
+                me = me ^ 0x13371337
+                if me == 0x2648ed87:
+                    print(hex(me) + " - " + raw)
+                    check = True
+
+if check == False:
+    print("Not Found")
