@@ -2,6 +2,11 @@ import math
 from random import shuffle
 
 
+def en(n):
+    n = hex(n)
+    return int("0x" + n[(2 + len(n) - 10):], 16)
+
+
 def fill_zero(n, max = 32):
     n = n[2:]
     result = n
@@ -46,7 +51,7 @@ def bu2(n):
         return n
 
 
-def cal(me_origin = "0000"):
+def cal(me_origin, type):
     me_origin = list(me_origin)
     me = []
     for i in me_origin:
@@ -72,35 +77,44 @@ def cal(me_origin = "0000"):
     esi = shl(esi, 0x8)
     esi = esi | eax
 
+    if type == 1:
+        esi = en(esi + 0xbabecafe)
+        esi = rol(esi, 0x6)
+        esi = bu2(0x13371337 - esi)
+        esi = esi ^ 0x13371337
+    elif type == 2:
+        esi = bu2(0xdeadbeef - esi)
+
     return esi
 
 
-string = "abcdefghiklmnopqrstuvwxyz_{}ABCDEFGHIKLMNOPQRSTUVWXYZ"
+string = "abcdefghijklmnopqrstuvwxyz_0987654321"
 string = list(string)
 shuffle(string)
 
-check = False
+need = [0x2648ed87, 0x94c3e659]
+
+dem = 0
+n = len(need)
 for a in string:
-    if check:
+    if dem == n:
         break
     for b in string:
-        if check:
+        if dem == n:
             break
         for c in string:
-            if check:
+            if dem == n:
                 break
             for d in string:
-                if check:
+                if dem == n:
                     break
                 raw = a + "" + b + "" + c + "" + d
-                me = cal(raw)
-                me += 0xbabecafe
-                me = rol(me, 0x6)
-                me = bu2(0x13371337 - me)
-                me = me ^ 0x13371337
-                if me == 0x2648ed87:
-                    print(hex(me) + " - " + raw)
-                    check = True
-
-if check == False:
-    print("Not Found")
+                for i in range(0, n):
+                    me1 = cal(raw, i+1)
+                    me2 = cal(raw.upper(), i+1)
+                    if me1 == need[i]:
+                        print(hex(me1) + " - " + raw)
+                        dem += 1
+                    if me2 == need[i]:
+                        print(hex(me2) + " - " + raw.upper())
+                        dem += 1
