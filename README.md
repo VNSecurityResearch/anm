@@ -126,3 +126,7 @@ https://medium.com/airbnb-engineering/using-machine-learning-to-predict-value-of
 https://medium.com/towards-data-science/spam-classifier-in-python-from-scratch-27a98ddd8e73
 https://medium.freecodecamp.org/every-single-machine-learning-course-on-the-internet-ranked-by-your-reviews-3c4a7b8026c0
 https://medium.com/@ageitgey/machine-learning-is-fun-80ea3ec3c471
+
+# Malware
+http://blog.airbuscybersecurity.com/post/2016/06/Following-Process-Hollowing-in-OllyDbg
+https://github.com/nihilus/ScyllaHide
