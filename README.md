@@ -130,3 +130,4 @@ https://medium.com/@ageitgey/machine-learning-is-fun-80ea3ec3c471
 # Malware
 http://blog.airbuscybersecurity.com/post/2016/06/Following-Process-Hollowing-in-OllyDbg
 https://github.com/nihilus/ScyllaHide
+https://reverse2learn.wordpress.com/category/unpacking/
