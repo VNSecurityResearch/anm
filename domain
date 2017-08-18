@@ -1,0 +1,144 @@
+#define WIN_OS 1
+#define WIN32_LEAN_AND_MEAN
+#include<windows.h>
+#include<winsock2.h>
+#include<ws2tcpip.h>
+#include<stdio.h>
+#include<stdlib.h>
+#include<commctrl.h>
+#include<mswsock.h>
+#include<conio.h>
+#include<wincrypt.h>
+#include<string.h>
+
+#define LEN 20 
+#define SUCCESS 1
+#define FAIL 0
+#define PORT "9005"
+#define IP "10.61.214.216"
+
+void dga(int);
+
+char buffer[18] = "";
+int clientSocket;
+
+int main() {
+	printf("Domain Fluxing--------------------\n");
+
+	int no = 0;
+	do {
+		printf("No: ");
+		scanf("%d", &no);
+
+		dga(no);
+		printf("%s\n", buffer);
+	} while (no != -1);
+
+	/*struct sockaddr_in servaddr;
+	WSADATA wsa = {};
+
+	if (WSAStartup(WINSOCK_VERSION, &wsa)) {
+		printf("Could not Start windows socket library!\n");
+		return 0;
+	}
+
+	clientSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+
+	servaddr.sin_family = AF_INET;
+	inet_pton(AF_INET, IP, &(servaddr.sin_addr));
+	servaddr.sin_port = htons(atoi(PORT));
+	if (connect(clientSocket, (struct sockaddr *)&servaddr, sizeof(servaddr)) < 0) {
+		printf("Could not establish new connection!\n");
+		return 0;
+	}
+
+	int dem = 0;
+	while (dem < 501) {
+
+		char buffer[1024] = "";
+		if (recv(clientSocket, buffer, sizeof(buffer), 0) > 0) {
+			printf("%d, %s\n", (dem + 1), buffer);
+			char *result = strstr(buffer, "ame: ");
+			if (result == 0) {
+				break;
+			}
+			int pos = result - buffer;
+			swprintf(temp, L"%hs", &buffer[pos + 5]);
+
+			temp[wcslen(temp) - 1] = 0;
+			temp[wcslen(temp) - 1] = 0;
+
+			wincript(temp);
+			printf("%s", encrypt_str);
+
+			if (send(clientSocket, encrypt_str, strlen(encrypt_str), 0) == SOCKET_ERROR) {
+				printf("Can't send!\n");
+				return 0;
+			}
+			else {
+				printf("Sent\n");
+			}
+		}
+		else {
+			printf("No response!\n");
+		}
+		dem++;
+	}
+
+	closesocket(clientSocket);
+	WSACleanup();*/
+
+	getch();
+	return 0;
+}
+
+void dga(int no) {
+	int cur = 0;
+
+	// Domain 0
+	char *v7 = "ssrgwnrmgrxe.com";
+
+	while (cur <= no) {
+		char *v3 = "oGkS3w3sGGOGG7oc";
+		signed int v4;
+		char v5;
+		char v6;
+		signed int v8;
+
+		v4 = 16;
+		v5 = 0;
+		do {
+			// Cong tat ca cac phan tu cua chuoi cho san
+			v6 = *v3++;
+			v5 += v6;
+			--v4;
+		} while (v4);
+
+		//printf("%X\n", v5);
+
+		strcpy(buffer, "");
+		char v62;
+		v8 = 12;
+		do {
+			while (1) {
+				v6 = *(v7 + 1) + (v5 ^ (*v7 + v6));
+				if ((unsigned __int8)v6 > 0x61u && (unsigned __int8)v6 < 0x7au)
+					break;
+				++v5;
+			}
+
+			char temp[2] = "";
+			sprintf(temp, "%c", v6);
+			strcat(buffer, temp);
+
+			*v7++;	// Duyet chuoi
+			--v8;
+		} while (v8);
+
+		strcat(buffer, ".com\n");
+		
+		v7 = buffer;	// luu lai de su dung lan sau
+
+		cur++;
+	}
+}
