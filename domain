@@ -18,6 +18,7 @@
 #define IP "10.61.214.216"
 
 void dga(int);
+void cal();
 
 char buffer[18] = "";
 int clientSocket;
@@ -38,8 +39,8 @@ int main() {
 	WSADATA wsa = {};
 
 	if (WSAStartup(WINSOCK_VERSION, &wsa)) {
-		printf("Could not Start windows socket library!\n");
-		return 0;
+	printf("Could not Start windows socket library!\n");
+	return 0;
 	}
 
 	clientSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
@@ -48,41 +49,41 @@ int main() {
 	inet_pton(AF_INET, IP, &(servaddr.sin_addr));
 	servaddr.sin_port = htons(atoi(PORT));
 	if (connect(clientSocket, (struct sockaddr *)&servaddr, sizeof(servaddr)) < 0) {
-		printf("Could not establish new connection!\n");
-		return 0;
+	printf("Could not establish new connection!\n");
+	return 0;
 	}
 
 	int dem = 0;
 	while (dem < 501) {
 
-		char buffer[1024] = "";
-		if (recv(clientSocket, buffer, sizeof(buffer), 0) > 0) {
-			printf("%d, %s\n", (dem + 1), buffer);
-			char *result = strstr(buffer, "ame: ");
-			if (result == 0) {
-				break;
-			}
-			int pos = result - buffer;
-			swprintf(temp, L"%hs", &buffer[pos + 5]);
+	char buffer[1024] = "";
+	if (recv(clientSocket, buffer, sizeof(buffer), 0) > 0) {
+	printf("%d, %s\n", (dem + 1), buffer);
+	char *result = strstr(buffer, "ame: ");
+	if (result == 0) {
+	break;
+	}
+	int pos = result - buffer;
+	swprintf(temp, L"%hs", &buffer[pos + 5]);
 
-			temp[wcslen(temp) - 1] = 0;
-			temp[wcslen(temp) - 1] = 0;
+	temp[wcslen(temp) - 1] = 0;
+	temp[wcslen(temp) - 1] = 0;
 
-			wincript(temp);
-			printf("%s", encrypt_str);
+	wincript(temp);
+	printf("%s", encrypt_str);
 
-			if (send(clientSocket, encrypt_str, strlen(encrypt_str), 0) == SOCKET_ERROR) {
-				printf("Can't send!\n");
-				return 0;
-			}
-			else {
-				printf("Sent\n");
-			}
-		}
-		else {
-			printf("No response!\n");
-		}
-		dem++;
+	if (send(clientSocket, encrypt_str, strlen(encrypt_str), 0) == SOCKET_ERROR) {
+	printf("Can't send!\n");
+	return 0;
+	}
+	else {
+	printf("Sent\n");
+	}
+	}
+	else {
+	printf("No response!\n");
+	}
+	dem++;
 	}
 
 	closesocket(clientSocket);
@@ -93,52 +94,61 @@ int main() {
 }
 
 void dga(int no) {
-	int cur = 0;
+	int ebp4 = 1000;
 
-	// Domain 0
-	char *v7 = "ssrgwnrmgrxe.com";
+	while (true) {
+		if (ebp4 != 0) {
+			ebp4--;
 
-	while (cur <= no) {
-		char *v3 = "oGkS3w3sGGOGG7oc";
-		signed int v4;
-		char v5;
-		char v6;
-		signed int v8;
+			int ecx;
+			char al;
+			char dl;
 
-		v4 = 16;
-		v5 = 0;
-		do {
-			// Cong tat ca cac phan tu cua chuoi cho san
-			v6 = *v3++;
-			v5 += v6;
-			--v4;
-		} while (v4);
+			char esi[] = "oGkS3w3sGGOGG7oc";
+			ecx = 16;
+			al = 0;
+			dl = 0;
 
-		//printf("%X\n", v5);
-
-		strcpy(buffer, "");
-		char v62;
-		v8 = 12;
-		do {
-			while (1) {
-				v6 = *(v7 + 1) + (v5 ^ (*v7 + v6));
-				if ((unsigned __int8)v6 > 0x61u && (unsigned __int8)v6 < 0x7au)
-					break;
-				++v5;
+			int i = 0;
+			while (i < ecx) {
+				al = esi[i];
+				dl += al;
+				i++;
 			}
 
-			char temp[2] = "";
-			sprintf(temp, "%c", v6);
-			strcat(buffer, temp);
+			char edi[] = "ssrgwnrmgrxe.com";
+			ecx = 12;
 
-			*v7++;	// Duyet chuoi
-			--v8;
-		} while (v8);
+			int j = 0;
+			while (j < ecx) {
+				al += edi[j];
+				al = al ^ dl;
+				al += edi[j + 1];
+				j++;
+				if (al <= 0x61) {
+					dl++;
+				}
+				else {
+					if (al < 0x7A) {
+						edi[j] = al;
+						j++;
+					}
+					else {
+						dl++;
+					}
+				}
+			}
 
-		strcat(buffer, ".com\n");
-		
-		v7 = buffer;	// luu lai de su dung lan sau
-
-		cur++;
+			strcpy(buffer, edi);
+			strcat(buffer, "\n");
+		}
+		else {
+			cal();
+			ebp4 = 1000;
+		}
 	}
+}
+
+void cal() {
+
 }
