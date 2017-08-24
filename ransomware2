@@ -1,0 +1,94 @@
+#include<conio.h>
+#include<stdio.h>
+#include<string.h>
+#include<Windows.h>
+
+int main() {
+	printf("Ransomware2------\n");
+	printf("Our tool will decrypt your selected file and place it in same directory with encrypted file!\n");
+	
+	char filename[256] = "";
+	do {
+		printf("Enter your full path of encrypted file (\"quit\" to exit): ");
+		gets_s(filename);
+
+		HANDLE hFile;
+		hFile = CreateFile(filename, 
+			GENERIC_READ, 
+			FILE_SHARE_READ, 
+			NULL, 
+			OPEN_EXISTING, 
+			0, 
+			NULL);
+		if (hFile != INVALID_HANDLE_VALUE) {
+			DWORD size = GetFileSize(hFile, NULL);
+
+			LPVOID buffer = VirtualAlloc(0, size, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
+			if (buffer != NULL) {
+				if (ReadFile(hFile, buffer, size, 0, NULL) != FALSE) {
+					LPVOID newbuffer = VirtualAlloc(0, size, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
+					char *newarr = (char *)newbuffer;
+					char *arr = (char *)buffer;
+					//printf("%s\n", arr);
+					char al, bl, cl, dl;
+					al = 0;
+					cl = 0xDE;
+					for (int i = 4; i < size; i++) {
+						char me = *(arr + i);
+						//printf("%c, %x - ", me, me);
+						dl = al;
+						dl -= 0x4B;
+						dl ^= al;
+						bl = al;
+						bl += bl;
+						dl += bl;
+						dl += cl;
+						dl += 0x2D;
+						me ^= dl;
+						al++;
+						//printf("%x\n", me);
+						*(newarr + i - 4) = me;
+					}
+					HANDLE hFileNew;
+					hFileNew = CreateFile(strcat(filename, ".decrypt"),
+						GENERIC_READ | GENERIC_WRITE,
+						FILE_SHARE_READ | FILE_SHARE_WRITE,
+						NULL,
+						CREATE_ALWAYS,
+						FILE_ATTRIBUTE_NORMAL,
+						NULL);
+					if (hFileNew != INVALID_HANDLE_VALUE) {
+						size -= 4;
+						DWORD written = 0;
+						if (WriteFile(hFileNew, newarr, size, &written, NULL) == FALSE) {
+							printf("WriteFile fail!\n");
+						} else {
+							if (written != size) {
+								printf("WriteFile not successful!\n");
+							} else {
+								printf("WriteFile successful!\n");
+							}
+						}
+					} else {
+						printf("CreateFile to Write fail!\n");
+					}
+
+					VirtualFree(newbuffer, size, MEM_RELEASE);
+					CloseHandle(hFileNew);
+				} else {
+					printf("ReadFile fail!\n");
+				}
+				VirtualFree(buffer, size, MEM_RELEASE);
+			} else {
+				printf("VirtualAlloc fail!\n");
+			}
+		} else {
+			printf("CreateFile to Read fail!\n");
+		}
+
+		CloseHandle(hFile);
+
+	} while (strcmp(filename, "quit") != 0 && strlen(filename) != 0);
+
+	return 0;
+}
