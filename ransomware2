@@ -2,18 +2,19 @@
 #include<stdio.h>
 #include<string.h>
 #include<Windows.h>
+#include<Shlwapi.h>
 
 int main() {
 	printf("Ransomware2------\n");
-	printf("Our tool will decrypt your selected file and place it in same directory with encrypted file!\n");
+	printf("Our tool will decrypt your selected file and place it in same directory with encrypted file like ABC.decrypt!\n");
 	
+	char newext[] = "decrypt";
 	char filename[256] = "";
 	do {
 		printf("Enter your full path of encrypted file (\"quit\" to exit): ");
 		gets_s(filename);
 
-		HANDLE hFile;
-		hFile = CreateFile(filename, 
+		HANDLE hFile = CreateFile(filename,
 			GENERIC_READ, 
 			FILE_SHARE_READ, 
 			NULL, 
@@ -49,8 +50,22 @@ int main() {
 						//printf("%x\n", me);
 						*(newarr + i - 4) = me;
 					}
-					HANDLE hFileNew;
-					hFileNew = CreateFile(strcat(filename, ".decrypt"),
+
+					char newname[256] = "";
+					PCHAR pos = StrStr(filename, "SecureCrypted");
+					for (int i = 0; i < strlen(filename); i++) {
+						if (&filename[i] == pos) {
+							for (int j = 0; j < strlen(newext); j++) {
+								newname[i] = newext[j];
+								i++;
+							}
+							break;
+						} else {
+							newname[i] = filename[i];
+						}
+					}
+
+					HANDLE hFileNew = CreateFile(newname,
 						GENERIC_READ | GENERIC_WRITE,
 						FILE_SHARE_READ | FILE_SHARE_WRITE,
 						NULL,
