@@ -1,0 +1,34 @@
+# Ransomware.exe
+
+## Tổng quan
+* Mã hóa các file trong ổ đĩa
+* Tạo Registry Key để khởi động cùng máy tính
+* Đóng giả Firefox
+* Vô hiệu hóa khả năng sử dụng máy tính trong các lần khởi động kế tiếp
+
+## Cách giải mã file
+* [Code giải mã file](https://gist.github.com/dinhvankiet124/13354d15841ef90545c3b6dc037373e0)
+* Xóa Registry Key tại 
+    HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Run\Firefox Update Checke
+    HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Run\Firefox Update Checke
+* Sử dụng Antiviruts
+
+## Hành vi
+___Cài đặt___
+* Ta có ransomeware.exe, chạy malware này.
+* Malware tiến hành copy chính mình đến %Program Files%\firefox.exe.
+* Malware tạo 2 registry key, nó sẽ chạy khi ta khởi động máy tính:
+In subkey: ___HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Run___
+Sets value: "REG_SZ"
+With data: "path to firefox.exe"
+In subkey: ___HKCU\Software\Microsoft\Windows\CurrentVersion\Internet___
+Sets value: "REG_SZ"
+With data: "path to firefox.exe"
+* Nó khởi chạy process mới cho firefox.exe. Nếu khởi chạy không thành, malware sử dụng chính mình để tiếp tục
+
+___Hành động___
+* Duyệt thư mục, mã hóa file
+* Kill process (taskmgr.exe, explorer.exe, regedit.exe)
+* Vô hiệu hóa máy tính
+
+___Thuật toán mã hóa___
